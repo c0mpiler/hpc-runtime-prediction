@@ -23,10 +23,10 @@ pip install -r requirements.txt
 
 2. **Prepare data:**
 
-   **Option A - Use existing Eagle dataset:**
+   **Option A - Use provided Eagle dataset:**
    ```bash
-   # Copy from monolithic app if available
-   cp ../../../ml/eagle-jobs/data/full-data/*.parquet data/raw/
+   # Run data setup script from microservices root
+   cd .. && ./copy_data.sh
    ```
    
    **Option B - Generate synthetic data:**
@@ -35,7 +35,6 @@ pip install -r requirements.txt
    ```
    
    See [DATA.md](../DATA.md) for detailed data setup instructions.
-
 3. **Train models:**
 ```bash
 # Quick test with sample

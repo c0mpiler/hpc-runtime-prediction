@@ -56,10 +56,15 @@ cd /Users/c0mpiler/sandbox/IBM/EDAaaS/edaaas-dev/rt-predictor/microservices
 
 ### 2. Prepare Training Data
 ```bash
-# See DATA.md for detailed instructions
-# Quick start with synthetic data:
+# Option A: Use provided data (requires Git LFS)
+git lfs pull  # Download data files
+./copy_data.sh  # Copy to training directory
+
+# Option B: Generate synthetic data
 python rt-predictor-training/scripts/generate_synthetic_data.py
 ```
+
+See [DATA.md](DATA.md) for detailed instructions.
 
 ### 3. Train Models (First Time)
 ```bash

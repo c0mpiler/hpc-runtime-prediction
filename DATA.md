@@ -39,101 +39,76 @@ The Eagle dataset contains the following columns:
 
 ## Data Location
 
-### Original Data Source
-The original Eagle dataset is typically obtained from:
-1. **NREL HPC Data Repository** (if publicly available)
-2. **Direct from NREL** (may require data use agreement)
-3. **Academic repositories** hosting HPC workload traces
+### Repository Data Structure
 
-### Local Data Setup
+The Eagle dataset is included in the repository using Git LFS:
 
-1. **Expected location for training service**:
-   ```
-   microservices/rt-predictor-training/data/raw/eagle_data.parquet
-   ```
+```
+microservices/raw-data/
+├── full/
+│   ├── eagle_data.parquet      # Full dataset (241MB)
+│   └── eagle_data.csv.bz2      # Compressed CSV (110MB)
+└── sample/
+    ├── sample_eagle_data.csv   # Sample for development (192KB)
+    ├── sample_eagle_data.json  # JSON format sample
+    └── sample_eagle_data.pkl   # Pickle format sample
+```
 
-2. **If you have the data elsewhere** (e.g., from the monolithic app):
+### Training Data Setup
+
+1. **Clone with Git LFS**:
    ```bash
-   # Copy from original location
-   cp /Users/c0mpiler/sandbox/IBM/EDAaaS/edaaas-dev/rt-predictor/ml/eagle-jobs/data/full-data/*.parquet \
-      /Users/c0mpiler/sandbox/IBM/EDAaaS/edaaas-dev/rt-predictor/microservices/rt-predictor-training/data/raw/
+   # Ensure Git LFS is installed
+   git lfs install
+   
+   # Clone repository (will download LFS files)
+   git clone <repository-url>
+   
+   # Or if already cloned, pull LFS files
+   git lfs pull
+   ```
+
+2. **Copy data to training directory**:
+   ```bash
+   # Run the data setup script
+   ./copy_data.sh
    ```
 
 3. **Docker volume mapping**:
    ```bash
-   # Map your local data directory when running training
-   docker run -v /path/to/your/eagle/data:/app/data/raw rt-predictor-training
+   # The docker-compose.yml handles this automatically
+   docker-compose --profile training up rt-predictor-training
    ```
 
-## Data Preparation
+## Data Preparation Options
 
-### Option 1: Use Existing Processed Data
-If you already have the Eagle dataset from the monolithic RT Predictor:
+### Option 1: Use Provided Data
+The repository includes the Eagle dataset:
 
 ```bash
 # Navigate to microservices directory
-cd /Users/c0mpiler/sandbox/IBM/EDAaaS/edaaas-dev/rt-predictor/microservices
+cd rt-predictor-microservices
 
-# Create data directory
-mkdir -p rt-predictor-training/data/raw
-
-# Copy existing data
-cp ../ml/eagle-jobs/data/full-data/*.parquet rt-predictor-training/data/raw/
+# Copy data to training directory
+./copy_data.sh
 ```
 
-### Option 2: Download Sample Data
-For testing purposes, you can use a sample dataset:
+### Option 2: Generate Synthetic Data
+For development or testing without the full dataset:
 
 ```bash
-# Create sample data script
-cd rt-predictor-training
-python scripts/create_sample_data.py --rows 100000 --output data/raw/eagle_data_sample.parquet
+# Generate synthetic data
+python rt-predictor-training/scripts/generate_synthetic_data.py \
+    --rows 100000 \
+    --output rt-predictor-training/data/raw/eagle_data.parquet
 ```
 
-### Option 3: Generate Synthetic Data
-For development without access to real data:
-
-```python
-# scripts/generate_synthetic_data.py
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-
-def generate_synthetic_eagle_data(n_records=100000):
-    """Generate synthetic HPC job data matching Eagle schema."""
-    
-    # Set random seed for reproducibility
-    np.random.seed(42)
-    
-    # Generate synthetic data
-    data = {
-        'job_id': range(1, n_records + 1),
-        'user': np.random.choice([f'user_{i}' for i in range(100)], n_records),
-        'account': np.random.choice([f'proj_{i}' for i in range(20)], n_records),
-        'partition': np.random.choice(['compute', 'gpu', 'debug', 'bigmem'], 
-                                     n_records, p=[0.6, 0.2, 0.1, 0.1]),
-        'qos': np.random.choice(['normal', 'high', 'low'], n_records, p=[0.7, 0.2, 0.1]),
-        'nodes_req': np.random.choice([1, 2, 4, 8, 16], n_records, p=[0.5, 0.25, 0.15, 0.07, 0.03]),
-        'processors_req': np.random.choice([16, 32, 48, 64], n_records),
-        'mem_req': np.random.choice([32000, 64000, 128000, 256000], n_records),
-        'wallclock_req': np.random.choice([3600, 7200, 14400, 28800], n_records),
-        'gpus_req': np.random.choice([0, 0, 0, 0, 1, 2, 4], n_records),
-    }
-    
-    # Generate realistic runtimes (correlated with requested time)
-    data['run_time'] = [
-        int(req * np.random.uniform(0.1, 0.9)) 
-        for req in data['wallclock_req']
-    ]
-    
-    df = pd.DataFrame(data)
-    return df
-
-if __name__ == "__main__":
-    df = generate_synthetic_eagle_data()
-    df.to_parquet('data/raw/eagle_data.parquet')
-    print(f"Generated {len(df)} synthetic records")
-```
+The synthetic data generator creates realistic HPC job patterns including:
+- Power-law user distribution
+- Temporal patterns in job submissions
+- Correlated resource requirements
+- GPU job distribution
+- Realistic runtime efficiencies
 
 ## Data Quality Checks
 
@@ -154,6 +129,28 @@ The training pipeline automatically splits data:
 
 Temporal splitting ensures the model is evaluated on future jobs, mimicking production usage.
 
+## Working with Different Data Formats
+
+### Parquet Files (Recommended)
+```python
+import pandas as pd
+df = pd.read_parquet('raw-data/full/eagle_data.parquet')
+```
+
+### Compressed CSV Files
+```python
+import pandas as pd
+df = pd.read_csv('raw-data/full/eagle_data.csv.bz2', compression='bz2')
+# Consider converting to parquet for better performance
+df.to_parquet('eagle_data.parquet')
+```
+
+### Sample Data
+```python
+# For quick development iterations
+df = pd.read_csv('raw-data/sample/sample_eagle_data.csv')
+```
+
 ## Privacy and Security
 
 - User IDs are anonymized in the dataset
@@ -163,42 +160,67 @@ Temporal splitting ensures the model is evaluated on future jobs, mimicking prod
 
 ## Troubleshooting
 
+### Git LFS Issues
+```bash
+# Check LFS status
+git lfs status
+
+# Re-download LFS files
+git lfs fetch --all
+git lfs checkout
+```
+
 ### "File not found" Error
 ```bash
 # Check if data exists
+ls -la raw-data/
+
+# Run data setup
+./copy_data.sh
+
+# Verify training data directory
 ls -la rt-predictor-training/data/raw/
-
-# Create directory if missing
-mkdir -p rt-predictor-training/data/raw
-
-# Verify file permissions
-chmod -R 755 rt-predictor-training/data/
-```
-
-### "Invalid parquet file" Error
-```bash
-# Verify file is valid parquet
-python -c "import pandas as pd; df = pd.read_parquet('path/to/file.parquet'); print(df.shape)"
 ```
 
 ### Memory Issues with Large Dataset
 ```bash
 # Use sample for development
+cd rt-predictor-training
 python src/train.py --sample-size 100000
 
 # Or increase Docker memory
-docker run -m 16g -v $(pwd)/data:/app/data rt-predictor-training
+docker run -m 16g rt-predictor-training
 ```
+
+### Converting Between Formats
+```python
+# CSV to Parquet
+import pandas as pd
+df = pd.read_csv('data.csv')
+df.to_parquet('data.parquet')
+
+# Compressed CSV to Parquet
+df = pd.read_csv('data.csv.bz2', compression='bz2')
+df.to_parquet('data.parquet')
+```
+
+## Performance Tips
+
+1. **Use Parquet Format**: 2-3x faster loading than CSV
+2. **Sample During Development**: Use `--sample-size` flag
+3. **Enable Compression**: Parquet has built-in compression
+4. **Batch Processing**: Process data in chunks for large files
 
 ## Next Steps
 
-1. **Obtain the data** using one of the methods above
-2. **Place in correct location**: `rt-predictor-training/data/raw/`
-3. **Run training**: `make train` or `docker-compose --profile training up`
-4. **Verify model output**: Check `data/models/` for saved artifacts
+1. **Setup data**: Run `./copy_data.sh`
+2. **Verify data**: Check `rt-predictor-training/data/raw/`
+3. **Run training**: `make train` or use docker-compose
+4. **Monitor progress**: Check logs in `rt-predictor-training/logs/`
 
 ## References
 
 - NREL Eagle System: https://www.nrel.gov/hpc/eagle-system.html
 - HPC Workload Archives: https://www.cs.huji.ac.il/labs/parallel/workload/
 - Parquet Format: https://parquet.apache.org/
+- Git LFS: https://git-lfs.github.com/

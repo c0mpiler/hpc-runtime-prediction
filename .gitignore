@@ -53,3 +53,4 @@ htmlcov/
 # Monitoring data
 prometheus-data/
 grafana-data/
+.DS_Store
