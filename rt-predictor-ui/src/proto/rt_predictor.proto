@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package rtpredictor.v1;
+
+option go_package = "github.com/yourusername/rt-predictor/api/v1;rtpredictorv1";
+
+// Job Runtime Predictor Service
+service JobRuntimePredictor {
+  // Single job prediction
+  rpc Predict(PredictRequest) returns (PredictResponse);
+  
+  // Batch prediction for multiple jobs
+  rpc PredictBatch(PredictBatchRequest) returns (PredictBatchResponse);
+  
+  // Stream predictions for large batches
+  rpc PredictStream(stream PredictRequest) returns (stream PredictResponse);
+  
+  // Get model information and health status
+  rpc GetModelInfo(GetModelInfoRequest) returns (GetModelInfoResponse);
+  
+  // Health check
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// Job features for prediction
+message JobFeatures {
+  int32 processors_req = 1;      // Number of processors requested
+  int32 nodes_req = 2;           // Number of nodes requested
+  double mem_req = 3;            // Memory requested in GB
+  double wallclock_req = 4;      // Wallclock time requested in seconds
+  string partition = 5;          // Job partition/queue
+  string qos = 6;                // Quality of Service
+  int64 submit_time = 7;         // Unix timestamp of submission (optional)
+}
+
+// Single prediction request
+message PredictRequest {
+  JobFeatures features = 1;       // Job features
+  string request_id = 2;          // Optional request ID for tracing
+  map<string, string> metadata = 3; // Optional metadata
+}
+
+// Single prediction response  
+message PredictResponse {
+  double predicted_runtime_seconds = 1;  // Predicted runtime in seconds
+  float confidence_lower = 2;            // 95% confidence interval lower bound
+  float confidence_upper = 3;            // 95% confidence interval upper bound
+  string model_version = 4;              // Model version used
+  int64 prediction_timestamp = 5;        // Unix timestamp of prediction
+  string request_id = 6;                 // Echo back request ID
+  
+  // Additional insights
+  string runtime_category = 7;           // e.g., "short", "medium", "long", "very_long"
+  double prediction_confidence = 8;      // Confidence score 0-1
+  map<string, double> feature_importance = 9; // Top feature contributions
+}
+
+// Batch prediction request
+message PredictBatchRequest {
+  repeated JobFeatures jobs = 1;         // List of jobs to predict
+  string batch_id = 2;                   // Optional batch ID
+  int32 max_parallel = 3;                // Max parallel predictions (0 = auto)
+}
+
+// Batch prediction response
+message PredictBatchResponse {
+  repeated PredictResponse predictions = 1;  // List of predictions
+  string batch_id = 2;                      // Echo back batch ID
+  int32 total_predictions = 3;              // Total number of predictions
+  int32 failed_predictions = 4;             // Number of failed predictions
+  repeated string errors = 5;               // Error messages if any
+  int64 processing_time_ms = 6;             // Total processing time
+}
+
+// Model information request
+message GetModelInfoRequest {}
+
+// Model information response
+message GetModelInfoResponse {
+  string model_type = 1;            // e.g., "ensemble", "xgboost", "lightgbm"
+  string model_version = 2;         // Model version
+  string training_date = 3;         // When model was trained
+  int64 training_samples = 4;       // Number of training samples
+  
+  // Performance metrics
+  double validation_mae = 5;        // Validation Mean Absolute Error
+  double validation_mape = 6;       // Validation Mean Absolute Percentage Error
+  double test_mae = 7;              // Test MAE if available
+  double test_mape = 8;             // Test MAPE if available
+  
+  // Feature information
+  repeated string feature_names = 9; // List of feature names
+  int32 num_features = 10;          // Number of features
+  
+  // Model status
+  bool is_loaded = 11;              // Whether model is loaded
+  int64 predictions_served = 12;    // Total predictions served
+  double average_latency_ms = 13;   // Average prediction latency
+  int64 uptime_seconds = 14;        // Service uptime
+  
+  // Model components (for ensemble)
+  map<string, double> ensemble_weights = 15; // Component model weights
+}
+
+// Health check request
+message HealthCheckRequest {}
+
+// Health check response
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+  }
+  
+  ServingStatus status = 1;
+  string message = 2;
+  int64 uptime_seconds = 3;
+  double memory_usage_mb = 4;
+  double cpu_usage_percent = 5;
+  map<string, string> model_status = 6;  // Status of each model component
+}
