@@ -54,7 +54,14 @@ The system consists of three main microservices:
 cd /Users/c0mpiler/sandbox/IBM/EDAaaS/edaaas-dev/rt-predictor/microservices
 ```
 
-### 2. Train Models (First Time)
+### 2. Prepare Training Data
+```bash
+# See DATA.md for detailed instructions
+# Quick start with synthetic data:
+python rt-predictor-training/scripts/generate_synthetic_data.py
+```
+
+### 3. Train Models (First Time)
 ```bash
 # Run training service
 docker-compose --profile training up rt-predictor-training

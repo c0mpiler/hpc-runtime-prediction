@@ -22,7 +22,19 @@ pip install -r requirements.txt
 ```
 
 2. **Prepare data:**
-Place your data file at `data/raw/eagle_data.parquet`
+
+   **Option A - Use existing Eagle dataset:**
+   ```bash
+   # Copy from monolithic app if available
+   cp ../../../ml/eagle-jobs/data/full-data/*.parquet data/raw/
+   ```
+   
+   **Option B - Generate synthetic data:**
+   ```bash
+   python scripts/generate_synthetic_data.py --output data/raw/eagle_data.parquet
+   ```
+   
+   See [DATA.md](../DATA.md) for detailed data setup instructions.
 
 3. **Train models:**
 ```bash
