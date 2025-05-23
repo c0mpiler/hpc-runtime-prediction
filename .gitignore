@@ -54,3 +54,4 @@ htmlcov/
 prometheus-data/
 grafana-data/
 .DS_Store
+rt-predictor-training/data/raw/
