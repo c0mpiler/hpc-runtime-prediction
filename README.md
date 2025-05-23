@@ -10,7 +10,7 @@ The system consists of three main microservices:
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │     │                 │
 │  Training       │────▶│  API Service    │◀────│  UI Service     │
-│  Service        │     │  (gRPC)        │     │  (Streamlit)   │
+│  Service        │     │  (gRPC)         │     │  (Streamlit)    │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
          │                       │                       │
