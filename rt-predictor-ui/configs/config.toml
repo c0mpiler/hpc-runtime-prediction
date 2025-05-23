@@ -1,0 +1,36 @@
+# RT Predictor UI Configuration
+
+[ui]
+title = "RT Predictor"
+theme = "dark"
+show_alerts = true
+alert_threshold = 1.5  # Show alert when requested/predicted > threshold
+
+[api]
+host = "localhost"
+port = 50051
+timeout = 30
+retry_attempts = 3
+retry_delay = 1.0
+
+[features]
+enable_batch_prediction = true
+enable_analytics = true
+enable_streaming = true
+max_batch_size = 1000
+max_file_size_mb = 100
+
+[visualization]
+chart_height = 400
+color_scheme = "plotly"
+show_confidence_intervals = true
+
+[monitoring]
+enable_metrics = true
+metrics_port = 9090
+log_level = "INFO"
+
+[cache]
+enable_caching = true
+cache_ttl_seconds = 300
+max_cache_size_mb = 100
