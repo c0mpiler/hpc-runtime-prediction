@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  rt-predictor-training:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rt-predictor-training
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CONFIG_PATH=/app/configs/config.toml
+      - DATA_PATH=/app/data
+      - MODEL_OUTPUT_PATH=/app/models
+      - LOG_LEVEL=INFO
+    volumes:
+      # Mount data directory
+      - ./data:/app/data
+      # Mount models directory for output
+      - ./models:/app/models
+      # Mount configs
+      - ./configs:/app/configs
+      # Mount logs
+      - ./logs:/app/logs
+    command: python src/train.py
+    networks:
+      - rt-predictor-network
+
+  # Optional: Jupyter notebook for experimentation
+  jupyter:
+    image: jupyter/datascience-notebook:latest
+    container_name: rt-predictor-jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./:/home/jovyan/work
+      - ./data:/home/jovyan/data
+      - ./models:/home/jovyan/models
+    networks:
+      - rt-predictor-network
+    profiles:
+      - dev
+
+networks:
+  rt-predictor-network:
+    driver: bridge
