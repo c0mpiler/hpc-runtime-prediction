@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  rt-predictor-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rt-predictor-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - RT_PREDICTOR_API_HOST=rt-predictor-api
+      - RT_PREDICTOR_API_PORT=50051
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./logs:/app/logs
+      - ./configs:/app/configs:ro
+    networks:
+      - rt-predictor-network
+    depends_on:
+      - rt-predictor-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  rt-predictor-api:
+    external: true
+    networks:
+      - rt-predictor-network
+
+networks:
+  rt-predictor-network:
+    external: true
+    name: rt-predictor-network
