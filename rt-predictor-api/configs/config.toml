@@ -1,0 +1,55 @@
+# RT Predictor API Service Configuration
+
+[server]
+port = 50051
+max_workers = 10
+max_message_length = 10485760  # 10MB
+metrics_port = 8181
+
+[model]
+path = "models/production"
+
+[features]
+# Feature engineering configuration (must match training)
+[features.optimization]
+chunk_size = 100000
+enable_caching = true
+cache_dir = "data/cache"
+n_jobs = -1
+use_optimized = true
+
+[features.time_windows]
+user_history_days = [7, 30, 90]
+queue_history_hours = [1, 6, 24]
+
+[logging]
+level = "INFO"
+format = "json"  # or "console" for development
+
+# Model ensemble configuration
+[training]
+use_ensemble = true
+models = ["xgboost", "lightgbm", "catboost"]
+
+[training.xgb_params]
+n_estimators = 1000
+max_depth = 10
+learning_rate = 0.05
+subsample = 0.8
+colsample_bytree = 0.8
+tree_method = "hist"
+
+[training.lgb_params]
+n_estimators = 1000
+max_depth = -1
+num_leaves = 100
+learning_rate = 0.05
+feature_fraction = 0.8
+bagging_fraction = 0.8
+bagging_freq = 5
+
+[training.cb_params]
+iterations = 1000
+depth = 8
+learning_rate = 0.05
+l2_leaf_reg = 3
