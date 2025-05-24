@@ -63,46 +63,51 @@ def show_single_prediction(client):
                 with col1:
                     st.metric(
                         "Predicted Runtime",
-                        format_runtime(int(prediction['predicted_runtime'])),
+                        format_runtime(int(prediction.predicted_runtime)),
                         help="Predicted actual execution time"
                     )
                     
-                    if 'confidence' in prediction:
-                        st.metric(
-                            "Confidence",
-                            f"{prediction['confidence']:.1%}",
-                            help="Model confidence in prediction"
-                        )
+                    # Display confidence score
+                    st.metric(
+                        "Confidence",
+                        f"{prediction.confidence_score:.1%}",
+                        help="Model confidence in prediction"
+                    )
                 
                 with col2:
-                    if 'wait_time' in prediction:
-                        st.metric(
-                            "Expected Wait Time",
-                            format_runtime(int(prediction['wait_time'])),
-                            help="Predicted time in queue"
-                        )
+                    # Display confidence interval
+                    confidence_range = prediction.confidence_interval[1] - prediction.confidence_interval[0]
+                    st.metric(
+                        "Confidence Interval",
+                        f"±{confidence_range/2:.0f}s",
+                        f"[{format_runtime(int(prediction.confidence_interval[0]))} - {format_runtime(int(prediction.confidence_interval[1]))}]",
+                        help="95% confidence interval for prediction"
+                    )
                     
-                    if 'efficiency' in prediction:
-                        efficiency_delta = prediction['efficiency'] - 0.7
-                        st.metric(
-                            "Predicted Efficiency",
-                            f"{prediction['efficiency']:.1%}",
-                            f"{efficiency_delta:+.1%}",
-                            help="Predicted resource utilization"
-                        )
+                    # Display model version
+                    st.metric(
+                        "Model Version",
+                        prediction.model_version,
+                        help="Version of the prediction model"
+                    )
                 
-                # Show detailed breakdown if available
-                if 'breakdown' in prediction:
-                    with st.expander("📊 Detailed Breakdown"):
-                        breakdown_df = pd.DataFrame([
-                            {"Component": k, "Value": v}
-                            for k, v in prediction['breakdown'].items()
-                        ])
-                        st.dataframe(breakdown_df, use_container_width=True)
+                # Show prediction details
+                with st.expander("📊 Prediction Details"):
+                    # Convert to dict for display
+                    pred_dict = prediction.to_dict()
+                    details_df = pd.DataFrame([
+                        {"Metric": "Runtime Category", "Value": prediction.runtime_category},
+                        {"Metric": "Prediction Time", "Value": prediction.prediction_time.strftime("%Y-%m-%d %H:%M:%S")},
+                        {"Metric": "Features Used", "Value": len(prediction.features_used)}
+                    ])
+                    st.dataframe(details_df, use_container_width=True)
                 
-                # Recommendations if available
-                if 'recommendations' in prediction:
-                    st.info("💡 " + prediction['recommendations'])
+                # Efficiency recommendation based on predicted vs requested time
+                efficiency = (prediction.predicted_runtime / job_params['walltime_req']) * 100
+                if efficiency < 50:
+                    st.info("💡 Your requested walltime is significantly higher than predicted. Consider reducing it to improve queue priority.")
+                elif efficiency > 90:
+                    st.warning("⚠️ Predicted runtime is close to requested walltime. Consider adding a buffer to avoid job timeout.")
             
         except Exception as e:
             st.error(f"❌ Prediction failed: {str(e)}")
