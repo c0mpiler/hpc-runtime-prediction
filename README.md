@@ -259,6 +259,11 @@ python rt-predictor-training/src/train.py --sample-size 100000
 
 ## 📈 Recent Updates
 
+### Version 1.2.1 (2025-05-24)
+- ✅ Fixed UI navigation issue (Streamlit auto-detection)
+- ✅ All UI pages now working correctly
+- ✅ Successful end-to-end predictions verified
+
 ### Version 1.2.0 (2025-05-24)
 - ✅ M2 Max optimization support
 - ✅ Batch prediction page implementation

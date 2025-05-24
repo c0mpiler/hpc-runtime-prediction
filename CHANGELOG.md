@@ -5,6 +5,23 @@ All notable changes to the RT Predictor Microservices project will be documented
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-05-24
+
+### Fixed
+
+#### UI Service Navigation
+- Fixed Streamlit auto-detection of `pages/` directory causing empty pages
+- Resolved navigation issue where batch prediction and analytics pages were not displaying
+- All three UI pages (Single Prediction, Batch Prediction, Analytics) now working correctly
+- Verified successful end-to-end predictions with 3m 10s runtime (80% confidence)
+
+### Changed
+
+#### Documentation
+- Updated README.md with navigation fix information
+- Added troubleshooting section for Streamlit multi-page issues
+- Updated UI README.md with known issues and fixes
+
 ## [1.2.0] - 2025-05-24
 
 ### Added
