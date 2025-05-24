@@ -1,4 +1,4 @@
-# RT Predictor Training Service Configuration
+# RT Predictor Training Service Configuration - Optimized for M2 Max
 
 [data]
 raw_data_path = "data/raw/eagle_data.parquet"
@@ -17,19 +17,19 @@ early_stopping_patience = 50
 [features]
 use_advanced_features = true
 cache_enabled = true
-chunk_size = 100000
-n_jobs = -1  # Use all CPU cores
+chunk_size = 500000  # Increased from 100k for more memory
+n_jobs = 10  # M2 Max has 12 cores, leave 2 for system
 
 [model.xgboost]
 n_estimators = 1000
 learning_rate = 0.05
-max_depth = 10
+max_depth = 12  # Increased depth
 subsample = 0.8
 colsample_bytree = 0.8
 early_stopping_rounds = 50
-tree_method = "hist"
+tree_method = "hist"  # Best for M2
 predictor = "cpu_predictor"
-n_jobs = -1
+n_jobs = 10
 random_state = 42
 reg_alpha = 0.1
 reg_lambda = 1.0
@@ -39,13 +39,15 @@ gamma = 0.1
 [model.lightgbm]
 n_estimators = 1000
 learning_rate = 0.05
-num_leaves = 127
+num_leaves = 255  # Increased from 127
 max_depth = -1
 subsample = 0.8
 colsample_bytree = 0.8
 early_stopping_rounds = 50
 device = "cpu"
-n_jobs = -1
+n_jobs = 10
+num_threads = 10
+force_row_wise = false  # Better for larger datasets
 random_state = 42
 reg_alpha = 0.1
 reg_lambda = 1.0
@@ -53,18 +55,21 @@ min_child_samples = 20
 boosting_type = "gbdt"
 objective = "regression"
 metric = "mae"
+max_bin = 511  # Increased for better accuracy
 
 [model.catboost]
 iterations = 1000
 learning_rate = 0.05
-depth = 10
+depth = 12  # Increased depth
 subsample = 0.8
 colsample_bylevel = 0.8
 early_stopping_rounds = 50
-thread_count = -1
+thread_count = 10
 random_state = 42
 loss_function = "RMSE"
 eval_metric = "MAE"
+task_type = "CPU"  # Explicit CPU mode
+bootstrap_type = "Bernoulli"  # Better for large datasets
 
 [ensemble]
 method = "weighted_average"

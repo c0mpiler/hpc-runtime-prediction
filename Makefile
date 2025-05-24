@@ -34,8 +34,8 @@ setup:
 	@echo "Checking data..."
 	@if [ ! -f rt-predictor-training/data/raw/eagle_data.parquet ]; then \
 		echo "Setting up training data..."; \
-		if [ -f copy_data.sh ]; then \
-			chmod +x copy_data.sh && ./copy_data.sh || echo "Warning: Could not copy data. You may need to run 'git lfs pull' first."; \
+		if [ -f scripts/copy_data.sh ]; then \
+			chmod +x scripts/copy_data.sh && ./scripts/copy_data.sh || echo "Warning: Could not copy data. You may need to run 'git lfs pull' first."; \
 		else \
 			echo "Warning: copy_data.sh not found. Please ensure training data is in rt-predictor-training/data/raw/"; \
 		fi; \

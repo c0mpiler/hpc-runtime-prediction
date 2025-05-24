@@ -1,6 +1,6 @@
 # RT Predictor Microservices
 
-A production-ready microservices architecture for HPC job runtime prediction, featuring machine learning models trained on the NREL Eagle dataset.
+A production-ready microservices architecture for HPC job runtime prediction, featuring state-of-the-art machine learning models trained on the NREL Eagle dataset.
 
 ## 🚀 Quick Start
 
@@ -30,19 +30,6 @@ This will automatically:
 - ✅ Build all Docker images
 - ✅ Train ML models (~5-10 minutes)
 - ✅ Start all services
-
-**Or use Make commands:**
-
-```bash
-# Complete fresh start
-make fresh-start
-
-# Or step by step:
-make setup      # Initial setup
-make build      # Build Docker images
-make train      # Train models
-make start      # Start services
-```
 
 ## Architecture Overview
 
@@ -77,40 +64,57 @@ The system consists of three main microservices:
 - Serves predictions with <10ms latency
 - Handles single, batch, and streaming requests
 - Exposes Prometheus metrics
+- Health check endpoint
+- Response caching and circuit breaker patterns
 
 ### 3. RT Predictor UI Service
 - Modern Streamlit web interface
 - Single and batch prediction capabilities
 - Real-time analytics dashboard
-- Overestimation alerts
+- CSV upload for batch processing
+- Model performance visualization
 
-## Quick Start
+## 📋 Prerequisites
 
-### Prerequisites
 - Docker and Docker Compose
 - 16GB+ RAM recommended (64GB for M2 Max optimization)
 - 10GB+ disk space
-- Environment setup: See [SETUP.md](SETUP.md) for detailed instructions
-- For Apple Silicon optimization: See [M2MAX_OPTIMIZATION.md](M2MAX_OPTIMIZATION.md)
+- Git and Git LFS (for training data)
 
-### 1. Clone and Setup
+## 🛠️ Setup Instructions
+
+### 1. Environment Setup
+
+Set the `$DEV` environment variable to your development directory:
+
+```bash
+# Temporary (current session)
+export DEV="/path/to/your/development/directory"
+
+# Or permanent (add to ~/.bashrc or ~/.zshrc)
+echo 'export DEV="/path/to/your/development/directory"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 2. Clone and Navigate
+
 ```bash
 cd $DEV/rt-predictor/microservices
 ```
 
-### 2. Prepare Training Data
+### 3. Prepare Training Data
+
 ```bash
 # Option A: Use provided data (requires Git LFS)
 git lfs pull  # Download data files
-./copy_data.sh  # Copy to training directory
+./scripts/copy_data.sh  # Copy to training directory
 
 # Option B: Generate synthetic data
 python rt-predictor-training/scripts/generate_synthetic_data.py
 ```
 
-See [DATA.md](DATA.md) for detailed instructions.
+### 4. Train Models (First Time)
 
-### 3. Train Models (First Time)
 ```bash
 # Standard training
 docker-compose --profile training up rt-predictor-training
@@ -119,35 +123,157 @@ docker-compose --profile training up rt-predictor-training
 make train-m2max
 ```
 
-### 3. Start All Services
+### 5. Start All Services
+
 ```bash
 # Start API, UI, and monitoring
 docker-compose up -d
+
+# Or with M2 Max optimization
+make start-m2max
 ```
 
-### 4. Access Services
-- UI: http://localhost:8501
-- API: localhost:50051 (gRPC)
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000 (admin/admin)
+### 6. Access Services
 
-## Configuration
+- **UI**: http://localhost:8501
+- **API**: localhost:50051 (gRPC)
+- **Metrics**: http://localhost:8181/metrics
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
 
-Each service has its own configuration in `configs/config.toml`:
+## 📊 Data Information
 
-```toml
-# Example: API Service Configuration
-[server]
-host = "0.0.0.0"
-port = 50051
-workers = 4
+### Dataset Overview
 
-[model]
-path = "/app/models/best_model.pkl"
-feature_engineer_path = "/app/models/feature_engineer.pkl"
+The RT Predictor is trained on the NREL Eagle HPC System Dataset:
+- **Size**: 11M+ job records
+- **Features**: 18 columns including resource requests, runtimes, and metadata
+- **Format**: Parquet files for efficient storage
+
+### Data Schema
+
+| Column | Description | Type |
+|--------|-------------|------|
+| job_id | Unique job identifier | int |
+| processors_req | Number of processors requested | int |
+| nodes_req | Number of nodes requested | int |
+| mem_req | Memory requested in MB | float |
+| wallclock_req | Requested walltime in seconds | float |
+| partition | Compute partition | string |
+| qos | Quality of Service level | string |
+| run_time | Actual runtime in seconds | float |
+| ... | Additional features | ... |
+
+## 🚀 Performance & Optimization
+
+### Standard Configuration
+- **Training Time**: ~10-15 minutes on 11M records
+- **Prediction Latency**: <10ms (p95)
+- **Throughput**: 10K+ predictions/second
+- **Model Accuracy**: MAE ~1.6 hours
+
+### M2 Max Optimized (Apple Silicon)
+- **Training Time**: ~5-8 minutes (2-3x faster)
+- **CPU Usage**: 10 cores (83% utilization)
+- **Memory**: Up to 48GB (75% of 64GB)
+- **Improved accuracy**: Deeper trees and more iterations
+
+#### M2 Max Key Optimizations:
+
+1. **CPU Utilization**: Uses 10 cores, leaving 2 for system
+2. **Memory Allocation**: 48GB for training, 8GB for API, 4GB for UI
+3. **Model Parameters**: Increased tree depth and iterations
+4. **Data Processing**: 5x larger chunk sizes (500k records)
+
+## 🔧 Common Commands
+
+```bash
+# Fresh start (clean + setup + build + train + start)
+make fresh-start
+
+# Individual operations
+make setup      # Initial setup
+make build      # Build Docker images
+make train      # Train models
+make start      # Start services
+make stop       # Stop services
+make restart    # Restart services
+make logs       # View logs
+make status     # Check service status
+
+# M2 Max optimized versions
+make fresh-start-m2max
+make train-m2max
+make start-m2max
+
+# Cleanup
+make clean      # Stop and remove containers
+make clean-all  # Deep clean including networks and volumes
 ```
 
-## Development
+## 🔍 Troubleshooting
+
+### Common Issues
+
+#### 1. Models not found
+```bash
+# Check shared volume
+docker volume inspect microservices_shared-models
+
+# Retrain models
+make train
+```
+
+#### 2. Connection refused
+```bash
+# Check service health
+docker-compose ps
+docker-compose logs rt-predictor-api
+
+# Restart services
+make restart
+```
+
+#### 3. High latency
+- Check resource limits
+- Enable caching in API service
+- Scale API replicas
+
+#### 4. Git LFS issues
+```bash
+# Check LFS status
+git lfs status
+
+# Re-download LFS files
+git lfs fetch --all
+git lfs checkout
+```
+
+#### 5. Memory issues
+```bash
+# Use sample for development
+python rt-predictor-training/src/train.py --sample-size 100000
+
+# Or increase Docker memory in Docker Desktop settings
+```
+
+## 📈 Recent Updates
+
+### Version 1.2.0 (2025-05-24)
+- ✅ M2 Max optimization support
+- ✅ Batch prediction page implementation
+- ✅ Analytics dashboard with live metrics
+- ✅ Enhanced error handling and caching
+
+### Version 1.1.0 (2025-05-23)
+- ✅ Fixed all proto message mismatches
+- ✅ Implemented health check endpoint
+- ✅ Added circuit breaker and retry logic
+- ✅ Complete UI implementation
+
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
+
+## 🏗️ Development
 
 ### Local Development
 
@@ -175,28 +301,16 @@ streamlit run src/app.py
 
 ### Testing
 
-Each service includes tests:
 ```bash
-# Run all tests
+# Run setup tests
+./scripts/test_setup.sh
+
+# Run service tests (when implemented)
 docker-compose run rt-predictor-api pytest
 docker-compose run rt-predictor-ui pytest
 ```
 
-## Monitoring
-
-### Metrics Available
-- Prediction latency (p50, p95, p99)
-- Request rate and errors
-- Model performance metrics
-- Resource utilization
-
-### Custom Dashboards
-Import provided Grafana dashboards:
-1. RT Predictor Overview
-2. API Performance
-3. Model Metrics
-
-## Production Deployment
+## 🚢 Production Deployment
 
 ### Kubernetes
 ```bash
@@ -205,88 +319,32 @@ kubectl apply -f k8s/
 ```
 
 ### Scaling
-- API: Horizontal scaling with load balancer
-- UI: Multiple replicas behind reverse proxy
-- Training: Scheduled jobs with resource limits
+- **API**: Horizontal scaling with load balancer
+- **UI**: Multiple replicas behind reverse proxy
+- **Training**: Scheduled jobs with resource limits
 
-## Performance
-
-### Standard Configuration
-- **Training Time**: ~10-15 minutes on 11M records
-- **Prediction Latency**: <10ms (p95)
-- **Throughput**: 10K+ predictions/second
-- **Model Accuracy**: MAE ~1.6 hours
-
-### M2 Max Optimized (Apple Silicon)
-- **Training Time**: ~5-8 minutes on 11M records (2-3x faster)
-- **CPU Usage**: 10 cores (83% utilization)
-- **Memory**: Up to 48GB (75% of 64GB)
-- **Improved accuracy**: Deeper trees and more iterations
-
-## Security
+## 🔒 Security
 
 - Input validation on all endpoints
-- gRPC with TLS support
+- gRPC with TLS support (configurable)
 - API authentication ready
+- No PII in training data
 - Secure configuration management
 
-## Troubleshooting
+## 📝 License
 
-### Common Issues
+See LICENSE file in root directory.
 
-1. **Models not found**:
-```bash
-# Check shared volume
-docker volume inspect microservices_shared-models
-```
-
-2. **Connection refused**:
-```bash
-# Check service health
-docker-compose ps
-docker-compose logs rt-predictor-api
-```
-
-3. **High latency**:
-- Check resource limits
-- Enable caching
-- Scale API replicas
-
-## Recent Updates & Migration Notes
-
-### Latest Fixes (May 2024)
-
-1. **Training Service**:
-   - Fixed import: `FeatureEngineer` → `OptimizedFeatureEngineer`
-   - Fixed `utils/__init__.py` imports
-   - Fixed `train_all_models` method parameters
-
-2. **API Service**:
-   - Fixed protobuf message names:
-     - `BatchPredictRequest` → `PredictBatchRequest`
-     - `request.requests` → `request.jobs`
-     - `StreamPredict` → `PredictStream`
-     - `ModelInfoRequest` → `GetModelInfoRequest`
-   - Fixed ensemble config: expects `models` key (not `model_names`)
-   - Added enhanced features: caching, circuit breaker, retry logic
-
-3. **UI Service**:
-   - Fixed missing `except` block in `grpc_client.py`
-
-### Migration from Monolithic Version
-
-If migrating from the monolithic RT Predictor:
-1. Models need to be retrained using the training service
-2. Ensemble config format has changed (uses `models` key)
-3. Proto message names have been standardized
-
-## Contributing
+## 🤝 Contributing
 
 1. Follow microservice boundaries
 2. Add tests for new features
 3. Update documentation
 4. Use conventional commits
 
-## License
+## 📚 Additional Resources
 
-See LICENSE file in root directory.
+- [Training Service README](rt-predictor-training/README.md)
+- [API Service README](rt-predictor-api/README.md)
+- [UI Service README](rt-predictor-ui/README.md)
+- [NREL Eagle System](https://www.nrel.gov/hpc/eagle-system.html)

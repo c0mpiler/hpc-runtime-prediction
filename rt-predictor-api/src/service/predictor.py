@@ -95,15 +95,40 @@ class PredictorService:
             logger.info(f"Loaded {model_type} model")
         
         # Initialize feature engineer
-        fe_config_path = model_path / 'feature_engineer_config.pkl'
-        if fe_config_path.exists():
-            # Load saved feature engineer
-            self.feature_engineer = joblib.load(fe_config_path)
-            logger.info("Loaded saved feature engineer")
-        else:
-            # Create new feature engineer
-            self.feature_engineer = OptimizedFeatureEngineer(self.config.get('features', {}))
-            logger.info("Created new feature engineer")
+        fe_path = model_path / 'feature_engineering.pkl'
+        logger.info(f"Looking for feature engineer at: {fe_path}")
+        try:
+            # Load the saved artifacts and reconstruct the feature engineer
+            artifacts = joblib.load(fe_path)
+            
+            # Check if it's already a feature engineer object (backward compatibility)
+            if hasattr(artifacts, 'transform'):
+                self.feature_engineer = artifacts
+            else:
+                # It's a dictionary of artifacts, reconstruct the feature engineer
+                self.feature_engineer = OptimizedFeatureEngineer(
+                    use_advanced_features=artifacts.get('use_advanced_features', True),
+                    chunk_size=artifacts.get('chunk_size', 100000),
+                    n_jobs=artifacts.get('n_jobs', -1),
+                    enable_caching=artifacts.get('enable_caching', True)
+                )
+                
+                # Load the saved state
+                self.feature_engineer.scalers = artifacts['scalers']
+                self.feature_engineer.encoders = artifacts['encoders']
+                self.feature_engineer.feature_stats = artifacts['feature_stats']
+                self.feature_engineer.user_stats = artifacts.get('user_stats', {})
+                self.feature_engineer.queue_stats = artifacts.get('queue_stats', {})
+                self.feature_engineer.is_fitted = artifacts['is_fitted']
+                
+                # Re-compile regex patterns (if method exists)
+                if hasattr(self.feature_engineer, '_compile_regex_patterns'):
+                    self.feature_engineer._compile_regex_patterns()
+                
+            logger.info("Successfully loaded saved feature engineer")
+        except Exception as e:
+            logger.error(f"Failed to load feature engineer from {fe_path}: {str(e)}")
+            raise ValueError(f"Could not load feature engineer. Training artifacts may be incomplete.")
         
         # Get feature columns from model
         if hasattr(self.model, 'feature_names_in_'):
@@ -123,7 +148,7 @@ class PredictorService:
                 'processors_req': features.processors_req,
                 'nodes_req': features.nodes_req,
                 'mem_req': features.mem_req,
-                'time_req': features.wallclock_req,  # Note: proto uses wallclock_req
+                'wallclock_req': features.wallclock_req,  # Match feature engineer
                 'partition': features.partition,
                 'qos': features.qos,
                 'gpus_req': 0,  # Not in proto, default to 0
@@ -189,7 +214,7 @@ class PredictorService:
                     'processors_req': job_features.processors_req,
                     'nodes_req': job_features.nodes_req,
                     'mem_req': job_features.mem_req,
-                    'time_req': job_features.wallclock_req,  # Note: proto uses wallclock_req
+                    'wallclock_req': job_features.wallclock_req,  # Match feature engineer
                     'partition': job_features.partition,
                     'qos': job_features.qos,
                     'gpus_req': 0,  # Not in proto, default to 0
