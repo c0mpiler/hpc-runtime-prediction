@@ -1,4 +1,4 @@
-# RT Predictor Microservices
+# HPC Run-Time Predictor Microservices
 
 A production-ready microservices architecture for HPC job runtime prediction, featuring state-of-the-art machine learning models trained on the NREL Eagle dataset.
 
