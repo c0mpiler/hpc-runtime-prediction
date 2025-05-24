@@ -21,7 +21,7 @@ from tqdm import tqdm
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.features import FeatureEngineer, DataPreprocessor
+from src.features import OptimizedFeatureEngineer, DataPreprocessor
 from src.model import ModelTrainer
 from src.utils.config import Config
 from src.utils.logger import setup_logger
@@ -85,7 +85,7 @@ def split_data(df: pd.DataFrame, config: Config) -> Tuple[pd.DataFrame, pd.DataF
 
 
 def engineer_features(train_df: pd.DataFrame, val_df: pd.DataFrame, test_df: pd.DataFrame, 
-                     config: Config) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, FeatureEngineer]:
+                     config: Config) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, OptimizedFeatureEngineer]:
     """Apply feature engineering to all datasets."""
     logger.info("Engineering features...")
     
@@ -93,7 +93,7 @@ def engineer_features(train_df: pd.DataFrame, val_df: pd.DataFrame, test_df: pd.
     use_advanced = config.get('features.use_advanced_features', True)
     chunk_size = config.get('features.chunk_size', 100000)
     
-    feature_engineer = FeatureEngineer(
+    feature_engineer = OptimizedFeatureEngineer(
         use_advanced_features=use_advanced,
         chunk_size=chunk_size,
         enable_caching=True
@@ -115,7 +115,7 @@ def engineer_features(train_df: pd.DataFrame, val_df: pd.DataFrame, test_df: pd.
 
 def train_models(X_train: pd.DataFrame, X_val: pd.DataFrame, X_test: pd.DataFrame,
                 train_df: pd.DataFrame, val_df: pd.DataFrame, test_df: pd.DataFrame,
-                feature_engineer: FeatureEngineer, config: Config) -> Dict[str, Any]:
+                feature_engineer: OptimizedFeatureEngineer, config: Config) -> Dict[str, Any]:
     """Train all models and create ensemble."""
     logger.info("Training models...")
     
@@ -145,16 +145,23 @@ def train_models(X_train: pd.DataFrame, X_val: pd.DataFrame, X_test: pd.DataFram
     trainer = ModelTrainer(config)
     
     # Train models
-    models = trainer.train_all_models(
+    trained_models = trainer.train_all_models(
         X_train_features, y_train,
-        X_val_features, y_val,
-        X_test_features, y_test
+        X_val_features, y_val
     )
     
-    return models
+    # Construct return dictionary with all necessary components
+    result = {
+        'models': trained_models,
+        'metrics': trainer.metrics,
+        'ensemble_weights': getattr(trainer, 'ensemble_weights', {}),
+        'feature_importance': getattr(trainer, 'feature_importance', {})
+    }
+    
+    return result
 
 
-def save_artifacts(models: Dict[str, Any], feature_engineer: FeatureEngineer, 
+def save_artifacts(models: Dict[str, Any], feature_engineer: OptimizedFeatureEngineer, 
                   config: Config, training_time: float):
     """Save all training artifacts."""
     logger.info("Saving artifacts...")
@@ -203,9 +210,17 @@ def save_artifacts(models: Dict[str, Any], feature_engineer: FeatureEngineer,
     
     # Save feature importance
     if 'feature_importance' in models:
+        # Convert DataFrames to dictionaries for JSON serialization
+        feature_importance_dict = {}
+        for model_name, importance_df in models['feature_importance'].items():
+            if hasattr(importance_df, 'to_dict'):
+                # Convert DataFrame to dict with 'records' orientation
+                feature_importance_dict[model_name] = importance_df.to_dict('records')
+            else:
+                feature_importance_dict[model_name] = importance_df
+        
         with open(output_dir / "feature_importance.json", 'w') as f:
-            json.dump(models['feature_importance'], f, indent=2)
-    
+            json.dump(feature_importance_dict, f, indent=2)
     logger.info(f"All artifacts saved to {output_dir}")
 
 

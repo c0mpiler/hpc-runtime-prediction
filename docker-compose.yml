@@ -10,7 +10,7 @@ services:
     volumes:
       - ./rt-predictor-training/data:/app/data
       - ./rt-predictor-training/configs:/app/configs
-      - shared-models:/app/models
+      - shared-models:/app/data/models
     networks:
       - rt-predictor-network
     environment:

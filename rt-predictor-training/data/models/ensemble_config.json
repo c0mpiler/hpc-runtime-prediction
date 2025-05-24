@@ -1,0 +1,13 @@
+{
+  "weights": {
+    "xgboost": 0.332822759596457,
+    "lightgbm": 0.330598600960424,
+    "catboost": 0.33657863944311894
+  },
+  "models": [
+    "xgboost",
+    "lightgbm",
+    "catboost"
+  ],
+  "combine_method": "weighted_average"
+}

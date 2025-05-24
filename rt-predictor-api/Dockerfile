@@ -29,8 +29,8 @@ RUN python -m grpc_tools.protoc \
     --grpc_python_out=./src/proto \
     ./src/proto/rt_predictor.proto
 
-# Fix imports in generated files
-RUN sed -i 's/import rt_predictor_pb2/from . import rt_predictor_pb2/' src/proto/rt_predictor_pb2_grpc.py
+# Fix imports in generated files - commented out as it causes import issues
+# RUN sed -i 's/import rt_predictor_pb2/from . import rt_predictor_pb2/' src/proto/rt_predictor_pb2_grpc.py
 
 # Create directories for models and logs
 RUN mkdir -p models logs

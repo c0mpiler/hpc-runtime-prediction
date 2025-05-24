@@ -1,0 +1,96 @@
+{
+  "model_type": "ensemble",
+  "training_date": "2025-05-24 00:30:49",
+  "training_time_seconds": 180.35355925559998,
+  "config": {
+    "data": {
+      "raw_data_path": "data/raw/eagle_data.parquet",
+      "processed_data_path": "data/processed",
+      "model_output_path": "data/models",
+      "cache_dir": "data/processed/cache/"
+    },
+    "training": {
+      "test_size": 0.2,
+      "validation_size": 0.1,
+      "random_state": 42,
+      "target_column": "run_time",
+      "use_log_transform": true,
+      "early_stopping_patience": 50
+    },
+    "features": {
+      "use_advanced_features": true,
+      "cache_enabled": true,
+      "chunk_size": 100000,
+      "n_jobs": -1
+    },
+    "model": {
+      "xgboost": {
+        "n_estimators": 1000,
+        "learning_rate": 0.05,
+        "max_depth": 10,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "early_stopping_rounds": 50,
+        "tree_method": "hist",
+        "predictor": "cpu_predictor",
+        "n_jobs": -1,
+        "random_state": 42,
+        "reg_alpha": 0.1,
+        "reg_lambda": 1.0,
+        "min_child_weight": 3,
+        "gamma": 0.1
+      },
+      "lightgbm": {
+        "n_estimators": 1000,
+        "learning_rate": 0.05,
+        "num_leaves": 127,
+        "max_depth": -1,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "early_stopping_rounds": 50,
+        "device": "cpu",
+        "n_jobs": -1,
+        "random_state": 42,
+        "reg_alpha": 0.1,
+        "reg_lambda": 1.0,
+        "min_child_samples": 20,
+        "boosting_type": "gbdt",
+        "objective": "regression",
+        "metric": "mae"
+      },
+      "catboost": {
+        "iterations": 1000,
+        "learning_rate": 0.05,
+        "depth": 10,
+        "subsample": 0.8,
+        "colsample_bylevel": 0.8,
+        "early_stopping_rounds": 50,
+        "thread_count": -1,
+        "random_state": 42,
+        "loss_function": "RMSE",
+        "eval_metric": "MAE"
+      }
+    },
+    "ensemble": {
+      "method": "weighted_average",
+      "optimize_weights": true,
+      "cv_folds": 5
+    },
+    "logging": {
+      "level": "INFO",
+      "log_to_file": true,
+      "log_dir": "logs/"
+    },
+    "monitoring": {
+      "track_experiments": true,
+      "experiment_name": "rt_predictor_training",
+      "mlflow_uri": "sqlite:///mlruns.db"
+    }
+  },
+  "ensemble_weights": {
+    "xgboost": 0.332822759596457,
+    "lightgbm": 0.330598600960424,
+    "catboost": 0.33657863944311894
+  },
+  "version": "2.0"
+}

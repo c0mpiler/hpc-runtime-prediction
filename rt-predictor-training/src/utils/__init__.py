@@ -1,6 +1,6 @@
 """RT Predictor Training Service - Utils Module."""
 
-from .config import load_config
+from .config import Config
 from .logger import setup_logger
 
-__all__ = ['load_config', 'setup_logger']
+__all__ = ['Config', 'setup_logger']

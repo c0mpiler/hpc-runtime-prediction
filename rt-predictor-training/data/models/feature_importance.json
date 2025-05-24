@@ -1,0 +1,536 @@
+{
+  "xgboost": [
+    {
+      "feature": "wallclock_req_scaled",
+      "importance": 0.3909913897514343
+    },
+    {
+      "feature": "resource_intensity_scaled",
+      "importance": 0.12123046815395355
+    },
+    {
+      "feature": "user_mean_runtime_scaled",
+      "importance": 0.10866940021514893
+    },
+    {
+      "feature": "job_complexity_score_scaled",
+      "importance": 0.04652087017893791
+    },
+    {
+      "feature": "user_accuracy_score_scaled",
+      "importance": 0.04254812374711037
+    },
+    {
+      "feature": "nodes_req_scaled",
+      "importance": 0.027753664180636406
+    },
+    {
+      "feature": "processors_req_scaled",
+      "importance": 0.025485290214419365
+    },
+    {
+      "feature": "qos_encoded",
+      "importance": 0.021526869386434555
+    },
+    {
+      "feature": "cpu_efficiency_score_scaled",
+      "importance": 0.017711646854877472
+    },
+    {
+      "feature": "queue_wait_time_scaled",
+      "importance": 0.017550986260175705
+    },
+    {
+      "feature": "week_of_year",
+      "importance": 0.017408384010195732
+    },
+    {
+      "feature": "user_job_count_scaled",
+      "importance": 0.01736566424369812
+    },
+    {
+      "feature": "month",
+      "importance": 0.012093178927898407
+    },
+    {
+      "feature": "memory_per_cpu_scaled",
+      "importance": 0.011796354316174984
+    },
+    {
+      "feature": "cpu_memory_ratio_scaled",
+      "importance": 0.01133497804403305
+    },
+    {
+      "feature": "is_high_memory_job",
+      "importance": 0.010218205861747265
+    },
+    {
+      "feature": "memory_per_node_scaled",
+      "importance": 0.010023866780102253
+    },
+    {
+      "feature": "partition_encoded",
+      "importance": 0.009997405111789703
+    },
+    {
+      "feature": "walltime_resource_ratio_scaled",
+      "importance": 0.009649000130593777
+    },
+    {
+      "feature": "day_of_month",
+      "importance": 0.009577954187989235
+    },
+    {
+      "feature": "is_business_hours",
+      "importance": 0.008960491046309471
+    },
+    {
+      "feature": "mem_req_scaled",
+      "importance": 0.008596092462539673
+    },
+    {
+      "feature": "resource_balance_scaled",
+      "importance": 0.008558138273656368
+    },
+    {
+      "feature": "queue_load_scaled",
+      "importance": 0.007540939841419458
+    },
+    {
+      "feature": "day_of_week",
+      "importance": 0.007254735101014376
+    },
+    {
+      "feature": "hour_of_day",
+      "importance": 0.006296434439718723
+    },
+    {
+      "feature": "is_large_job",
+      "importance": 0.004874450620263815
+    },
+    {
+      "feature": "peak_hour_large_job",
+      "importance": 0.004623831249773502
+    },
+    {
+      "feature": "is_night",
+      "importance": 0.003841215977445245
+    },
+    {
+      "feature": "name_has_numbers",
+      "importance": 0.0
+    },
+    {
+      "feature": "array_job_size_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_prod_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_test_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_array_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_gpu_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_mpi_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "total_compute_units_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "name_length_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "user_frequency",
+      "importance": 0.0
+    },
+    {
+      "feature": "user_is_frequent",
+      "importance": 0.0
+    },
+    {
+      "feature": "user_underestimate_tendency",
+      "importance": 0.0
+    },
+    {
+      "feature": "user_overestimate_tendency",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_weekend",
+      "importance": 0.0
+    },
+    {
+      "feature": "quarter",
+      "importance": 0.0
+    }
+  ],
+  "lightgbm": [
+    {
+      "feature": "user_accuracy_score_scaled",
+      "importance": 112
+    },
+    {
+      "feature": "wallclock_req_scaled",
+      "importance": 94
+    },
+    {
+      "feature": "user_mean_runtime_scaled",
+      "importance": 93
+    },
+    {
+      "feature": "queue_wait_time_scaled",
+      "importance": 66
+    },
+    {
+      "feature": "week_of_year",
+      "importance": 59
+    },
+    {
+      "feature": "job_complexity_score_scaled",
+      "importance": 27
+    },
+    {
+      "feature": "user_job_count_scaled",
+      "importance": 26
+    },
+    {
+      "feature": "day_of_month",
+      "importance": 24
+    },
+    {
+      "feature": "queue_load_scaled",
+      "importance": 19
+    },
+    {
+      "feature": "walltime_resource_ratio_scaled",
+      "importance": 17
+    },
+    {
+      "feature": "resource_balance_scaled",
+      "importance": 15
+    },
+    {
+      "feature": "qos_encoded",
+      "importance": 14
+    },
+    {
+      "feature": "month",
+      "importance": 11
+    },
+    {
+      "feature": "hour_of_day",
+      "importance": 9
+    },
+    {
+      "feature": "user_frequency",
+      "importance": 7
+    },
+    {
+      "feature": "resource_intensity_scaled",
+      "importance": 5
+    },
+    {
+      "feature": "day_of_week",
+      "importance": 5
+    },
+    {
+      "feature": "partition_encoded",
+      "importance": 5
+    },
+    {
+      "feature": "cpu_efficiency_score_scaled",
+      "importance": 5
+    },
+    {
+      "feature": "processors_req_scaled",
+      "importance": 4
+    },
+    {
+      "feature": "is_business_hours",
+      "importance": 3
+    },
+    {
+      "feature": "mem_req_scaled",
+      "importance": 3
+    },
+    {
+      "feature": "nodes_req_scaled",
+      "importance": 2
+    },
+    {
+      "feature": "cpu_memory_ratio_scaled",
+      "importance": 2
+    },
+    {
+      "feature": "user_is_frequent",
+      "importance": 1
+    },
+    {
+      "feature": "memory_per_node_scaled",
+      "importance": 1
+    },
+    {
+      "feature": "is_high_memory_job",
+      "importance": 1
+    },
+    {
+      "feature": "name_length_scaled",
+      "importance": 0
+    },
+    {
+      "feature": "array_job_size_scaled",
+      "importance": 0
+    },
+    {
+      "feature": "is_prod_job",
+      "importance": 0
+    },
+    {
+      "feature": "is_test_job",
+      "importance": 0
+    },
+    {
+      "feature": "is_array_job",
+      "importance": 0
+    },
+    {
+      "feature": "is_gpu_job",
+      "importance": 0
+    },
+    {
+      "feature": "is_mpi_job",
+      "importance": 0
+    },
+    {
+      "feature": "name_has_numbers",
+      "importance": 0
+    },
+    {
+      "feature": "memory_per_cpu_scaled",
+      "importance": 0
+    },
+    {
+      "feature": "user_underestimate_tendency",
+      "importance": 0
+    },
+    {
+      "feature": "user_overestimate_tendency",
+      "importance": 0
+    },
+    {
+      "feature": "total_compute_units_scaled",
+      "importance": 0
+    },
+    {
+      "feature": "is_weekend",
+      "importance": 0
+    },
+    {
+      "feature": "peak_hour_large_job",
+      "importance": 0
+    },
+    {
+      "feature": "quarter",
+      "importance": 0
+    },
+    {
+      "feature": "is_night",
+      "importance": 0
+    },
+    {
+      "feature": "is_large_job",
+      "importance": 0
+    }
+  ],
+  "catboost": [
+    {
+      "feature": "wallclock_req_scaled",
+      "importance": 19.795684982978763
+    },
+    {
+      "feature": "user_accuracy_score_scaled",
+      "importance": 19.19588011730823
+    },
+    {
+      "feature": "user_mean_runtime_scaled",
+      "importance": 18.939919049163528
+    },
+    {
+      "feature": "job_complexity_score_scaled",
+      "importance": 12.625741798489875
+    },
+    {
+      "feature": "week_of_year",
+      "importance": 7.874328206361937
+    },
+    {
+      "feature": "queue_wait_time_scaled",
+      "importance": 6.203313765760285
+    },
+    {
+      "feature": "user_frequency",
+      "importance": 2.8280544093356155
+    },
+    {
+      "feature": "user_job_count_scaled",
+      "importance": 2.653431034587238
+    },
+    {
+      "feature": "walltime_resource_ratio_scaled",
+      "importance": 2.20522738882818
+    },
+    {
+      "feature": "qos_encoded",
+      "importance": 2.057578957628934
+    },
+    {
+      "feature": "resource_intensity_scaled",
+      "importance": 1.5755762536471005
+    },
+    {
+      "feature": "total_compute_units_scaled",
+      "importance": 0.8458294264939996
+    },
+    {
+      "feature": "resource_balance_scaled",
+      "importance": 0.8407591061530679
+    },
+    {
+      "feature": "day_of_month",
+      "importance": 0.6347975269226225
+    },
+    {
+      "feature": "cpu_efficiency_score_scaled",
+      "importance": 0.47736758334334256
+    },
+    {
+      "feature": "month",
+      "importance": 0.3346317342559582
+    },
+    {
+      "feature": "user_is_frequent",
+      "importance": 0.33398575707357897
+    },
+    {
+      "feature": "processors_req_scaled",
+      "importance": 0.2570660811552508
+    },
+    {
+      "feature": "queue_load_scaled",
+      "importance": 0.09781576966302982
+    },
+    {
+      "feature": "cpu_memory_ratio_scaled",
+      "importance": 0.08614599028050447
+    },
+    {
+      "feature": "day_of_week",
+      "importance": 0.07344199785281419
+    },
+    {
+      "feature": "memory_per_cpu_scaled",
+      "importance": 0.06342306271613816
+    },
+    {
+      "feature": "is_business_hours",
+      "importance": 0.0
+    },
+    {
+      "feature": "array_job_size_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_prod_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_test_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_array_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_gpu_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_mpi_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "name_has_numbers",
+      "importance": 0.0
+    },
+    {
+      "feature": "name_length_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "mem_req_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "user_underestimate_tendency",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_night",
+      "importance": 0.0
+    },
+    {
+      "feature": "user_overestimate_tendency",
+      "importance": 0.0
+    },
+    {
+      "feature": "memory_per_node_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "hour_of_day",
+      "importance": 0.0
+    },
+    {
+      "feature": "peak_hour_large_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_weekend",
+      "importance": 0.0
+    },
+    {
+      "feature": "quarter",
+      "importance": 0.0
+    },
+    {
+      "feature": "partition_encoded",
+      "importance": 0.0
+    },
+    {
+      "feature": "nodes_req_scaled",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_high_memory_job",
+      "importance": 0.0
+    },
+    {
+      "feature": "is_large_job",
+      "importance": 0.0
+    }
+  ]
+}
