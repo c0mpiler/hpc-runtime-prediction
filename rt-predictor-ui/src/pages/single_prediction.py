@@ -49,3 +49,61 @@ def show_single_prediction(client):
                 'username': username,
                 'submit_time': int(datetime.now().timestamp())
             }
+            
+            # Make prediction
+            with st.spinner("🔮 Making prediction..."):
+                prediction = client.predict_single(job_params)
+            
+            if prediction:
+                # Display results
+                st.success("✅ Prediction completed successfully!")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.metric(
+                        "Predicted Runtime",
+                        format_runtime(int(prediction['predicted_runtime'])),
+                        help="Predicted actual execution time"
+                    )
+                    
+                    if 'confidence' in prediction:
+                        st.metric(
+                            "Confidence",
+                            f"{prediction['confidence']:.1%}",
+                            help="Model confidence in prediction"
+                        )
+                
+                with col2:
+                    if 'wait_time' in prediction:
+                        st.metric(
+                            "Expected Wait Time",
+                            format_runtime(int(prediction['wait_time'])),
+                            help="Predicted time in queue"
+                        )
+                    
+                    if 'efficiency' in prediction:
+                        efficiency_delta = prediction['efficiency'] - 0.7
+                        st.metric(
+                            "Predicted Efficiency",
+                            f"{prediction['efficiency']:.1%}",
+                            f"{efficiency_delta:+.1%}",
+                            help="Predicted resource utilization"
+                        )
+                
+                # Show detailed breakdown if available
+                if 'breakdown' in prediction:
+                    with st.expander("📊 Detailed Breakdown"):
+                        breakdown_df = pd.DataFrame([
+                            {"Component": k, "Value": v}
+                            for k, v in prediction['breakdown'].items()
+                        ])
+                        st.dataframe(breakdown_df, use_container_width=True)
+                
+                # Recommendations if available
+                if 'recommendations' in prediction:
+                    st.info("💡 " + prediction['recommendations'])
+            
+        except Exception as e:
+            st.error(f"❌ Prediction failed: {str(e)}")
+            st.info("Please check your input parameters and try again.")

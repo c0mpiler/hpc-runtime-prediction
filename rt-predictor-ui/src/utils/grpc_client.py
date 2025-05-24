@@ -224,6 +224,43 @@ class RTPredictorClient:
                 'last_updated': 'unknown'
             }
     
+    def health_check(self) -> Dict[str, Any]:
+        """
+        Check the health status of the API service.
+        
+        Returns:
+            Dictionary with health status information
+        """
+        try:
+            request = rt_predictor_pb2.HealthCheckRequest()
+            response = self.stub.HealthCheck(request, timeout=5)
+            
+            return {
+                'status': response.status,
+                'serving': response.status == rt_predictor_pb2.HealthCheckResponse.SERVING,
+                'message': response.message,
+                'uptime_seconds': response.uptime_seconds,
+                'memory_usage_mb': response.memory_usage_mb,
+                'cpu_usage_percent': response.cpu_usage_percent,
+                'model_status': dict(response.model_status)
+            }
+        except grpc.RpcError as e:
+            logger.error(f"Health check failed: {e.code()} - {e.details()}")
+            return {
+                'status': 'error',
+                'serving': False,
+                'message': f"Health check failed: {e.details()}",
+                'error': str(e)
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error during health check: {str(e)}")
+            return {
+                'status': 'error',
+                'serving': False,
+                'message': f"Health check failed: {str(e)}",
+                'error': str(e)
+            }
+    
     def close(self):
         """Close the gRPC channel."""
         if self.channel:

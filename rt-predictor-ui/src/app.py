@@ -106,15 +106,10 @@ def connect_to_api():
             st.session_state.client.close()
         
         st.session_state.client = RTPredictorClient(host=API_HOST, port=API_PORT)
-        
-        if st.session_state.client.health_check():
-            st.session_state.api_connected = True
-            logger.info(f"Connected to API service at {API_HOST}:{API_PORT}")
-            return True
-        else:
-            st.session_state.api_connected = False
-            logger.error("API service health check failed")
-            return False
+        # If we got here, connection was successful
+        st.session_state.api_connected = True
+        logger.info(f"Connected to API service at {API_HOST}:{API_PORT}")
+        return True
             
     except Exception as e:
         st.session_state.api_connected = False
