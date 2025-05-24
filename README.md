@@ -378,4 +378,4 @@ See LICENSE file in root directory.
 - [Training Service README](rt-predictor-training/README.md)
 - [API Service README](rt-predictor-api/README.md)
 - [UI Service README](rt-predictor-ui/README.md)
-- [NREL Eagle System](https://www.nrel.gov/hpc/eagle-system.html)
+- [NREL's HPC dataset of 11M+ jobs](https://github.com/NREL/eagle-jobs/)
