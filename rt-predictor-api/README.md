@@ -159,6 +159,7 @@ Access at `http://localhost:3000` (admin/admin) when using monitoring profile.
 - Check model files exist in `models/production/`
 - Verify proto files are generated
 - Check port 50051 is available
+- Ensure ensemble_config.json has `models` key (not `model_names`)
 
 ### Predictions failing
 - Ensure feature engineering matches training
@@ -169,6 +170,19 @@ Access at `http://localhost:3000` (admin/admin) when using monitoring profile.
 - Enable model caching
 - Increase worker threads
 - Use batch predictions for multiple jobs
+
+### Common Errors and Fixes
+
+1. **KeyError: 'model_names'**
+   - The ensemble config expects `models` key, not `model_names`
+   - Ensure your trained models use the correct config format
+
+2. **Proto compilation errors**
+   - Message names have been standardized:
+     - Use `PredictBatchRequest` (not `BatchPredictRequest`)
+     - Use `request.jobs` (not `request.requests`)
+     - Use `PredictStream` (not `StreamPredict`)
+     - Use `GetModelInfoRequest` (not `ModelInfoRequest`)
 
 ## Development
 

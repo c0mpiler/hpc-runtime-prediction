@@ -71,9 +71,31 @@ Training produces these artifacts in `data/models/`:
 - `lightgbm_model.pkl` - LightGBM model
 - `catboost_model.pkl` - CatBoost model
 - `feature_engineering.pkl` - Feature transformer
-- `ensemble_config.json` - Ensemble weights
+- `ensemble_config.json` - Ensemble weights (uses `models` key)
 - `model_info.json` - Model metadata
 - `training_metrics.json` - Performance metrics
+
+### Ensemble Config Format
+
+The `ensemble_config.json` uses the following structure:
+```json
+{
+  "weights": {
+    "xgboost": 0.33,
+    "lightgbm": 0.33,
+    "catboost": 0.34
+  },
+  "models": ["xgboost", "lightgbm", "catboost"],
+  "combine_method": "weighted_average"
+}
+```
+
+## Important Notes
+
+### Feature Engineering
+- Uses `OptimizedFeatureEngineer` class (not the legacy `FeatureEngineer`)
+- Supports parallel processing and caching
+- Handles 44+ engineered features
 
 ## Monitoring
 

@@ -2,6 +2,39 @@
 
 A production-ready microservices architecture for HPC job runtime prediction, featuring machine learning models trained on the NREL Eagle dataset.
 
+## 🚀 Quick Start
+
+**Get everything running in one command:**
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd rt-predictor/microservices
+
+# Run the automated setup
+./quickstart.sh
+```
+
+This will automatically:
+- ✅ Check prerequisites (Docker, Docker Compose)
+- ✅ Pull training data (Git LFS)
+- ✅ Build all Docker images
+- ✅ Train ML models (~5-10 minutes)
+- ✅ Start all services
+
+**Or use Make commands:**
+
+```bash
+# Complete fresh start
+make fresh-start
+
+# Or step by step:
+make setup      # Initial setup
+make build      # Build Docker images
+make train      # Train models
+make start      # Start services
+```
+
 ## Architecture Overview
 
 The system consists of three main microservices:
@@ -48,10 +81,11 @@ The system consists of three main microservices:
 - Docker and Docker Compose
 - 16GB+ RAM recommended
 - 10GB+ disk space
+- Environment setup: See [SETUP.md](SETUP.md) for detailed instructions
 
 ### 1. Clone and Setup
 ```bash
-cd /Users/c0mpiler/sandbox/IBM/EDAaaS/edaaas-dev/rt-predictor/microservices
+cd $DEV/rt-predictor/microservices
 ```
 
 ### 2. Prepare Training Data
@@ -197,6 +231,34 @@ docker-compose logs rt-predictor-api
 - Check resource limits
 - Enable caching
 - Scale API replicas
+
+## Recent Updates & Migration Notes
+
+### Latest Fixes (May 2024)
+
+1. **Training Service**:
+   - Fixed import: `FeatureEngineer` → `OptimizedFeatureEngineer`
+   - Fixed `utils/__init__.py` imports
+   - Fixed `train_all_models` method parameters
+
+2. **API Service**:
+   - Fixed protobuf message names:
+     - `BatchPredictRequest` → `PredictBatchRequest`
+     - `request.requests` → `request.jobs`
+     - `StreamPredict` → `PredictStream`
+     - `ModelInfoRequest` → `GetModelInfoRequest`
+   - Fixed ensemble config: expects `models` key (not `model_names`)
+   - Added enhanced features: caching, circuit breaker, retry logic
+
+3. **UI Service**:
+   - Fixed missing `except` block in `grpc_client.py`
+
+### Migration from Monolithic Version
+
+If migrating from the monolithic RT Predictor:
+1. Models need to be retrained using the training service
+2. Ensemble config format has changed (uses `models` key)
+3. Proto message names have been standardized
 
 ## Contributing
 

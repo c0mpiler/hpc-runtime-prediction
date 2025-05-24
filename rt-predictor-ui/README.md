@@ -169,6 +169,11 @@ grpcurl -plaintext localhost:50051 list
 docker logs rt-predictor-ui
 ```
 
+3. **Common gRPC errors**:
+   - **"Connection refused"**: Ensure API service is running
+   - **"Deadline exceeded"**: Check network latency or increase timeout
+   - **Proto mismatch**: Regenerate proto files with `./scripts/generate_proto.sh`
+
 ### Performance Issues
 
 1. **Enable caching**:
@@ -181,6 +186,17 @@ def expensive_computation():
 2. **Optimize queries**:
 - Use batch predictions for multiple jobs
 - Enable connection pooling
+
+### Known Issues & Fixes
+
+1. **SyntaxError in grpc_client.py**
+   - Fixed: Missing `except` block has been added
+   - If you see this error, pull the latest code
+
+2. **Proto message errors**
+   - Ensure you're using the correct message names:
+     - `PredictBatchRequest` (not `BatchPredictRequest`)
+     - `PredictStream` (not `StreamPredict`)
 
 ## Security
 
