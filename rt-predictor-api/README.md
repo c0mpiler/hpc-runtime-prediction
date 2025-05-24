@@ -80,6 +80,14 @@ docker-compose up -d
 docker-compose --profile monitoring up -d
 ```
 
+3. M2 Max optimized deployment:
+```bash
+# Uses docker-compose.m2max.yml with resource limits:
+# - 4 CPU cores
+# - 8GB RAM
+make start-m2max
+```
+
 ## API Reference
 
 ### Single Prediction

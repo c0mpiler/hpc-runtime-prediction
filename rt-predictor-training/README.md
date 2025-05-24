@@ -12,6 +12,19 @@ The training service:
 
 ## Quick Start
 
+### Using Docker (Recommended)
+
+**Standard Setup:**
+```bash
+make train
+```
+
+**M2 Max Optimized (Apple Silicon):**
+```bash
+# 2-3x faster training with optimized settings
+make train-m2max
+```
+
 ### Local Development
 
 1. **Setup environment:**
@@ -64,6 +77,25 @@ Edit `configs/config.toml` to customize:
 - Data paths
 - Training parameters
 
+### M2 Max Optimization
+
+For Apple Silicon M2 Max, use `configs/config.m2max.toml` which includes:
+- **CPU cores**: 10 (out of 12 available)
+- **Memory**: Up to 48GB allocation
+- **Chunk size**: 500k records (5x larger)
+- **Tree depth**: 12 (increased from 10)
+- **LightGBM leaves**: 255 (increased from 127)
+- **Max bins**: 511 (better accuracy)
+
+To apply M2 Max optimization:
+```bash
+# Option 1: Use make command
+make train-m2max
+
+# Option 2: Copy config manually
+cp configs/config.m2max.toml configs/config.toml
+```
+
 ## Output
 
 Training produces these artifacts in `data/models/`:
@@ -102,6 +134,18 @@ The `ensemble_config.json` uses the following structure:
 Training progress is logged to:
 - Console (with colors)
 - `logs/` directory (timestamped files)
+
+### Performance Monitoring
+
+**Standard training:**
+```bash
+docker stats rt-predictor-training
+```
+
+**M2 Max optimized:**
+- CPU usage: ~1000% (10 cores)
+- Memory: Up to 48GB
+- Training time: 5-8 minutes (vs 10-15 minutes standard)
 
 ## Testing
 

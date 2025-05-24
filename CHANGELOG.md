@@ -5,6 +5,30 @@ All notable changes to the RT Predictor Microservices project will be documented
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-05-24
+
+### Added
+
+#### M2 Max Optimization (Apple Silicon)
+- Created `docker-compose.m2max.yml` with optimized resource limits
+- Added `config.m2max.toml` with Apple Silicon optimized settings:
+  - 10 CPU cores allocation (83% utilization)
+  - 48GB RAM limit (75% of 64GB total)
+  - 5x larger chunk sizes (500k records)
+  - Deeper trees and more iterations for all models
+- New make commands: `train-m2max`, `start-m2max`, `fresh-start-m2max`
+- Added `optimize-m2max.sh` quick setup script
+- Created comprehensive `M2MAX_OPTIMIZATION.md` documentation
+- 2-3x faster training times (5-8 minutes vs 15-20 minutes)
+
+### Updated
+
+#### Documentation
+- Main README.md: Added M2 Max quick start and performance sections
+- Training README.md: Added M2 Max configuration details
+- API README.md: Added resource allocation notes
+- Makefile help: Added M2 Max commands section
+
 ## [1.1.0] - 2025-05-23
 
 ### Fixed
