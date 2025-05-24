@@ -17,6 +17,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Import utilities
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
 from utils.grpc_client import format_runtime, calculate_efficiency
 
 def validate_csv_data(df: pd.DataFrame) -> Tuple[bool, List[str]]:
