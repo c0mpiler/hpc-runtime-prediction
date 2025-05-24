@@ -5,6 +5,22 @@ All notable changes to the RT Predictor Microservices project will be documented
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+#### Documentation
+- Added comprehensive screenshots section to README.md
+- Created screenshots directory structure in docs/
+- Captured screenshots of all major interfaces:
+  - Single Prediction page
+  - Batch Prediction page  
+  - Analytics Dashboard
+  - Prometheus monitoring interface
+  - Grafana dashboard
+- Added screenshot descriptions and captions
+- Created screenshots/README.md with detailed descriptions
+
 ## [1.2.1] - 2025-05-24
 
 ### Fixed
