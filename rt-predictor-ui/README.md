@@ -193,7 +193,11 @@ def expensive_computation():
    - Fixed: Missing `except` block has been added
    - If you see this error, pull the latest code
 
-2. **Proto message errors**
+2. **SyntaxError in single_prediction.py**
+   - Fixed: Missing exception handling and prediction display logic added
+   - Complete try/except block now properly handles prediction errors
+
+3. **Proto message errors**
    - Ensure you're using the correct message names:
      - `PredictBatchRequest` (not `BatchPredictRequest`)
      - `PredictStream` (not `StreamPredict`)
