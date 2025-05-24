@@ -2,22 +2,22 @@ syntax = "proto3";
 
 package rtpredictor.v1;
 
-option go_package = "github.com/yourusername/rt-predictor/api/v1;rtpredictorv1";
+option go_package = "https://github.com/c0mpiler/hpc-runtime-prediction/api/v1;rtpredictorv1";
 
 // Job Runtime Predictor Service
 service JobRuntimePredictor {
   // Single job prediction
   rpc Predict(PredictRequest) returns (PredictResponse);
-  
+
   // Batch prediction for multiple jobs
   rpc PredictBatch(PredictBatchRequest) returns (PredictBatchResponse);
-  
+
   // Stream predictions for large batches
   rpc PredictStream(stream PredictRequest) returns (stream PredictResponse);
-  
+
   // Get model information and health status
   rpc GetModelInfo(GetModelInfoRequest) returns (GetModelInfoResponse);
-  
+
   // Health check
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }
@@ -40,7 +40,7 @@ message PredictRequest {
   map<string, string> metadata = 3; // Optional metadata
 }
 
-// Single prediction response  
+// Single prediction response
 message PredictResponse {
   double predicted_runtime_seconds = 1;  // Predicted runtime in seconds
   float confidence_lower = 2;            // 95% confidence interval lower bound
@@ -48,7 +48,7 @@ message PredictResponse {
   string model_version = 4;              // Model version used
   int64 prediction_timestamp = 5;        // Unix timestamp of prediction
   string request_id = 6;                 // Echo back request ID
-  
+
   // Additional insights
   string runtime_category = 7;           // e.g., "short", "medium", "long", "very_long"
   double prediction_confidence = 8;      // Confidence score 0-1
@@ -81,23 +81,23 @@ message GetModelInfoResponse {
   string model_version = 2;         // Model version
   string training_date = 3;         // When model was trained
   int64 training_samples = 4;       // Number of training samples
-  
+
   // Performance metrics
   double validation_mae = 5;        // Validation Mean Absolute Error
   double validation_mape = 6;       // Validation Mean Absolute Percentage Error
   double test_mae = 7;              // Test MAE if available
   double test_mape = 8;             // Test MAPE if available
-  
+
   // Feature information
   repeated string feature_names = 9; // List of feature names
   int32 num_features = 10;          // Number of features
-  
+
   // Model status
   bool is_loaded = 11;              // Whether model is loaded
   int64 predictions_served = 12;    // Total predictions served
   double average_latency_ms = 13;   // Average prediction latency
   int64 uptime_seconds = 14;        // Service uptime
-  
+
   // Model components (for ensemble)
   map<string, double> ensemble_weights = 15; // Component model weights
 }
@@ -112,7 +112,7 @@ message HealthCheckResponse {
     SERVING = 1;
     NOT_SERVING = 2;
   }
-  
+
   ServingStatus status = 1;
   string message = 2;
   int64 uptime_seconds = 3;

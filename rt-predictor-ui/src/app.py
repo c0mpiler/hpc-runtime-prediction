@@ -62,7 +62,7 @@ st.markdown("""
         font-size: 1.1rem;
         opacity: 0.9;
     }
-    
+
     /* Metrics styling */
     .metric-card {
         background: white;
@@ -75,7 +75,7 @@ st.markdown("""
         transform: translateY(-5px);
         box-shadow: 0 5px 20px rgba(0,0,0,0.15);
     }
-    
+
     /* Chart title styling */
     .chart-title {
         font-size: 20px !important;
@@ -101,13 +101,13 @@ def connect_to_api():
     try:
         if st.session_state.client:
             st.session_state.client.close()
-        
+
         st.session_state.client = RTPredictorClient(host=API_HOST, port=API_PORT)
         # If we got here, connection was successful
         st.session_state.api_connected = True
         logger.info(f"Connected to API service at {API_HOST}:{API_PORT}")
         return True
-            
+
     except Exception as e:
         st.session_state.api_connected = False
         logger.error(f"Failed to connect to API: {str(e)}")
@@ -124,17 +124,17 @@ st.markdown("""
 # Sidebar
 with st.sidebar:
     st.header("🔧 Configuration")
-    
+
     # API Connection Status
     st.subheader("API Connection")
-    
+
     col1, col2 = st.columns([3, 1])
     with col1:
         if st.session_state.api_connected:
             st.success("✅ Connected to API")
         else:
             st.error("❌ Not connected")
-    
+
     with col2:
         if st.button("🔄", help="Reconnect to API"):
             with st.spinner("Connecting..."):
@@ -142,7 +142,7 @@ with st.sidebar:
                     st.success("Connected!")
                 else:
                     st.error("Connection failed!")
-    
+
     # Navigation
     st.subheader("🗺️ Navigation")
     page = st.radio(
@@ -162,7 +162,7 @@ if st.session_state.api_connected and st.session_state.client:
     from views.single_prediction import show_single_prediction
     from views.batch_prediction import show_batch_prediction
     from views.analytics import show_analytics
-    
+
     # Route to selected page
     if page == "🎯 Single Prediction":
         show_single_prediction(st.session_state.client)
@@ -175,27 +175,27 @@ else:
     st.error("⚠️ Unable to connect to RT Predictor API")
     st.markdown("""
     ### Troubleshooting Steps:
-    
+
     1. **Check if the API service is running:**
        ```bash
        docker ps | grep rt-predictor-api
        ```
-    
+
     2. **Verify the API is accessible:**
        ```bash
        grpcurl -plaintext localhost:50051 list
        ```
-    
+
     3. **Check the logs:**
        ```bash
        docker logs rt-predictor-api
        ```
-    
+
     4. **Restart the services:**
        ```bash
        docker-compose restart
        ```
-    
+
     5. Click the 🔄 button in the sidebar to retry the connection.
     """)
 
@@ -204,8 +204,8 @@ st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center; color: #666; font-size: 0.9em;'>
-        RT Predictor v1.0 | Powered by XGBoost, LightGBM & CatBoost | 
-        <a href='https://github.com/your-org/rt-predictor' target='_blank'>GitHub</a>
+        RT Predictor v1.0 | Powered by XGBoost, LightGBM & CatBoost |
+        <a href='https://github.com/c0mpiler/hpc-runtime-prediction' target='_blank'>GitHub</a>
     </div>
     """,
     unsafe_allow_html=True
