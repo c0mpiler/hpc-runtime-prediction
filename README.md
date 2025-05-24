@@ -49,10 +49,10 @@ The system consists of three main microservices:
          │                       │                       │
          │                       │                       │
          ▼                       ▼                       ▼
-   ┌──────────┐           ┌──────────┐           ┌──────────┐
-   │  Models  │           │ Metrics  │           │  Users   │
-   │  Volume  │           │  (Prom)  │           │          │
-   └──────────┘           └──────────┘           └──────────┘
+    ┌──────────┐            ┌──────────┐            ┌──────────┐
+    │  Models  │            │ Metrics  │            │  Users   │
+    │  Volume  │            │  (Prom)  │            │          │
+    └──────────┘            └──────────┘            └──────────┘
 ```
 
 ## Services
