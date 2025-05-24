@@ -145,3 +145,87 @@ with st.sidebar:
                     st.success("Connected!")
                 else:
                     st.error("Connection failed!")
+    
+    # Navigation
+    st.subheader("🗺️ Navigation")
+    page = st.radio(
+        "Select Page",
+        ["🎯 Single Prediction", "📦 Batch Prediction", "📊 Analytics"],
+        index=0,
+        label_visibility="collapsed"
+    )
+
+# Main content area
+if not st.session_state.api_connected:
+    # Try to connect on first load
+    connect_to_api()
+
+if st.session_state.api_connected and st.session_state.client:
+    # Import pages
+    from pages.single_prediction import show_single_prediction
+    
+    # Route to selected page
+    if page == "🎯 Single Prediction":
+        show_single_prediction(st.session_state.client)
+    elif page == "📦 Batch Prediction":
+        # Batch prediction page (placeholder)
+        st.header("📦 Batch Prediction")
+        st.info("Batch prediction functionality coming soon!")
+        st.markdown("""
+        This page will allow you to:
+        - Upload CSV files with multiple job parameters
+        - Get predictions for all jobs at once
+        - Download results with predictions
+        - View statistics and visualizations
+        """)
+    elif page == "📊 Analytics":
+        # Analytics page (placeholder)
+        st.header("📊 Analytics Dashboard")
+        st.info("Analytics functionality coming soon!")
+        st.markdown("""
+        This page will show:
+        - Model performance metrics
+        - Prediction accuracy trends
+        - Resource utilization patterns
+        - System health monitoring
+        """)
+else:
+    # Connection error state
+    st.error("⚠️ Unable to connect to RT Predictor API")
+    st.markdown("""
+    ### Troubleshooting Steps:
+    
+    1. **Check if the API service is running:**
+       ```bash
+       docker ps | grep rt-predictor-api
+       ```
+    
+    2. **Verify the API is accessible:**
+       ```bash
+       grpcurl -plaintext localhost:50051 list
+       ```
+    
+    3. **Check the logs:**
+       ```bash
+       docker logs rt-predictor-api
+       ```
+    
+    4. **Restart the services:**
+       ```bash
+       docker-compose restart
+       ```
+    
+    5. Click the 🔄 button in the sidebar to retry the connection.
+    """)
+
+# Footer
+st.markdown("---")
+st.markdown(
+    """
+    <div style='text-align: center; color: #666; font-size: 0.9em;'>
+        RT Predictor v1.0 | Powered by XGBoost, LightGBM & CatBoost | 
+        <a href='https://github.com/your-org/rt-predictor' target='_blank'>GitHub</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
