@@ -9,9 +9,6 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Set PYTHONPATH to include src directory
-ENV PYTHONPATH=/app/src:$PYTHONPATH
-
 # Copy requirements
 COPY requirements.txt .
 
@@ -55,5 +52,5 @@ EXPOSE 8501
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
-# Run the application
-CMD ["streamlit", "run", "src/app.py", "--server.maxUploadSize=100"]
+# Run the application with PYTHONPATH set
+CMD ["sh", "-c", "PYTHONPATH=/app/src:$PYTHONPATH streamlit run src/app.py --server.maxUploadSize=100"]
