@@ -109,11 +109,12 @@ gatherUsageStats = false
 ```
 rt-predictor-ui/
 ├── src/
-│   ├── app.py              # Main Streamlit application
-│   ├── pages/              # UI pages
-│   │   ├── single_prediction.py
-│   │   ├── batch_prediction.py
-│   │   └── analytics.py
+│   ├── app.py              # Main Streamlit app with radio navigation
+│   ├── pages/              # UI page functions (not standalone apps)
+│   │   ├── __init__.py
+│   │   ├── single_prediction.py  # show_single_prediction(client)
+│   │   ├── batch_prediction.py   # show_batch_prediction(client)
+│   │   └── analytics.py          # show_analytics(client)
 │   ├── utils/              # Utilities
 │   │   └── grpc_client.py  # gRPC client wrapper
 │   └── proto/              # Generated protobuf files
@@ -121,7 +122,7 @@ rt-predictor-ui/
 ├── scripts/                # Utility scripts
 ├── tests/                  # Test files
 ├── requirements.txt        # Dependencies
-├── Dockerfile              # Container definition
+├── Dockerfile              # Container definition (sets PYTHONPATH)
 └── docker-compose.yml      # Service orchestration
 ```
 
@@ -189,19 +190,28 @@ def expensive_computation():
 
 ### Known Issues & Fixes
 
-1. **SyntaxError in grpc_client.py**
+1. **Empty Batch/Analytics Pages (Streamlit Auto-Detection)**
+   - **Issue**: Streamlit auto-detects `pages/` directory and creates multi-page app structure
+   - **Symptoms**: 
+     - Empty batch prediction and analytics pages
+     - 404 errors for `/_stcore/health` on page routes
+     - Auto-generated navigation links in sidebar
+   - **Fix**: Page functions should be imported from `pages/` directory
+   - **Note**: If you see numbered files like `1_🎯_Single_Prediction.py`, remove them
+
+2. **SyntaxError in grpc_client.py**
    - Fixed: Missing `except` block has been added
    - If you see this error, pull the latest code
 
-2. **SyntaxError in single_prediction.py**
+3. **SyntaxError in single_prediction.py**
    - Fixed: Missing exception handling and prediction display logic added
    - Complete try/except block now properly handles prediction errors
 
-3. **Blank UI / 404 errors**
+4. **Blank UI / 404 errors**
    - Fixed: app.py was incomplete, missing main content area
    - Complete page routing and navigation added
 
-4. **Proto message errors**
+5. **Proto message errors**
    - Ensure you're using the correct message names:
      - `PredictBatchRequest` (not `BatchPredictRequest`)
      - `PredictStream` (not `StreamPredict`)
