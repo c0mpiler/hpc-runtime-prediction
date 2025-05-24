@@ -163,32 +163,16 @@ if not st.session_state.api_connected:
 if st.session_state.api_connected and st.session_state.client:
     # Import pages
     from pages.single_prediction import show_single_prediction
+    from pages.batch_prediction import show_batch_prediction
+    from pages.analytics import show_analytics
     
     # Route to selected page
     if page == "🎯 Single Prediction":
         show_single_prediction(st.session_state.client)
     elif page == "📦 Batch Prediction":
-        # Batch prediction page (placeholder)
-        st.header("📦 Batch Prediction")
-        st.info("Batch prediction functionality coming soon!")
-        st.markdown("""
-        This page will allow you to:
-        - Upload CSV files with multiple job parameters
-        - Get predictions for all jobs at once
-        - Download results with predictions
-        - View statistics and visualizations
-        """)
+        show_batch_prediction(st.session_state.client)
     elif page == "📊 Analytics":
-        # Analytics page (placeholder)
-        st.header("📊 Analytics Dashboard")
-        st.info("Analytics functionality coming soon!")
-        st.markdown("""
-        This page will show:
-        - Model performance metrics
-        - Prediction accuracy trends
-        - Resource utilization patterns
-        - System health monitoring
-        """)
+        show_analytics(st.session_state.client)
 else:
     # Connection error state
     st.error("⚠️ Unable to connect to RT Predictor API")
