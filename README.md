@@ -141,6 +141,32 @@ make start-m2max
 - **Prometheus**: http://localhost:9090
 - **Grafana**: http://localhost:3000 (admin/admin)
 
+## 📸 Screenshots
+
+### RT Predictor UI
+
+#### Single Prediction Page
+![Single Prediction](docs/screenshots/single-prediction.png)
+*Make single job runtime predictions with an intuitive interface*
+
+#### Batch Prediction Page
+![Batch Prediction](docs/screenshots/batch-prediction.png)
+*Upload CSV files for bulk runtime predictions*
+
+#### Analytics Dashboard
+![Analytics Dashboard](docs/screenshots/analytics-dashboard.png)
+*Real-time system health monitoring and performance metrics*
+
+<!-- ### Monitoring Stack
+
+#### Prometheus
+![Prometheus Dashboard](docs/screenshots/prometheus-dashboard.png)
+*Query and visualize metrics collected from all services*
+
+#### Grafana
+![Grafana Dashboard](docs/screenshots/grafana-dashboard.png)
+*Create custom dashboards for monitoring RT Predictor performance* -->
+
 ## 📊 Data Information
 
 ### Dataset Overview
