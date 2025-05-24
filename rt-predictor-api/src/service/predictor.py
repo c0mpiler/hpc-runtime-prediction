@@ -116,22 +116,21 @@ class PredictorService:
         
         logger.info(f"Model loaded successfully. Type: {model_type}, Features: {len(self.feature_columns) if self.feature_columns else 'unknown'}")
     
-    def predict_single(self, request: Any) -> Dict[str, Any]:
+    def predict_single(self, features: Any) -> Dict[str, Any]:
         """Make a single prediction."""
         try:
-            # Convert request to dataframe
             data = {
-                'processors_req': request.processors_req,
-                'nodes_req': request.nodes_req,
-                'mem_req': request.mem_req,
-                'time_req': request.time_req,
-                'partition': request.partition,
-                'qos': request.qos,
-                'gpus_req': request.gpus_req if hasattr(request, 'gpus_req') else 0,
+                'processors_req': features.processors_req,
+                'nodes_req': features.nodes_req,
+                'mem_req': features.mem_req,
+                'time_req': features.wallclock_req,  # Note: proto uses wallclock_req
+                'partition': features.partition,
+                'qos': features.qos,
+                'gpus_req': 0,  # Not in proto, default to 0
                 # Add default values for missing columns
-                'user': request.user if hasattr(request, 'user') else 'unknown',
-                'account': request.account if hasattr(request, 'account') else 'default',
-                'name': request.job_name if hasattr(request, 'job_name') else 'job',
+                'user': 'unknown',
+                'account': 'default',
+                'name': 'job',
                 'job_id': 0,  # Dummy value
                 'state': 'PENDING',
                 'submit_time': pd.Timestamp.now(),
@@ -185,18 +184,18 @@ class PredictorService:
         try:
             # Convert requests to dataframe
             data_list = []
-            for request in requests:
+            for i, job_features in enumerate(requests):
                 data = {
-                    'processors_req': request.processors_req,
-                    'nodes_req': request.nodes_req,
-                    'mem_req': request.mem_req,
-                    'time_req': request.time_req,
-                    'partition': request.partition,
-                    'qos': request.qos,
-                    'gpus_req': request.gpus_req if hasattr(request, 'gpus_req') else 0,
-                    'user': request.user if hasattr(request, 'user') else 'unknown',
-                    'account': request.account if hasattr(request, 'account') else 'default',
-                    'name': request.job_name if hasattr(request, 'job_name') else 'job',
+                    'processors_req': job_features.processors_req,
+                    'nodes_req': job_features.nodes_req,
+                    'mem_req': job_features.mem_req,
+                    'time_req': job_features.wallclock_req,  # Note: proto uses wallclock_req
+                    'partition': job_features.partition,
+                    'qos': job_features.qos,
+                    'gpus_req': 0,  # Not in proto, default to 0
+                    'user': 'unknown',
+                    'account': 'default',
+                    'name': 'job',
                     'job_id': i,  # Use index as dummy job_id
                     'state': 'PENDING',
                     'submit_time': pd.Timestamp.now(),
