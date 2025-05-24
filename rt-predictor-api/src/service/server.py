@@ -532,22 +532,26 @@ def serve(config: dict):
     logger.info("Loading predictor service...")
     start_load = time.time()
     
+    # Pass full config to PredictorService (it needs model config)
     predictor_service = PredictorService(config)
     
     MODEL_LOAD_TIME.observe(time.time() - start_load)
     logger.info(f"Predictor service loaded in {time.time() - start_load:.2f}s")
     
+    # Extract server config for server-specific settings
+    server_config = config.get('server', {})
+    
     # Start Prometheus metrics server
-    metrics_port = config.get('metrics_port', 8181)
+    metrics_port = server_config.get('metrics_port', 8181)
     start_http_server(metrics_port)
     logger.info(f"Prometheus metrics server started on port {metrics_port}")
     
     # Create gRPC server with optimized settings
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=config.get('max_workers', 20)),
+        futures.ThreadPoolExecutor(max_workers=server_config.get('max_workers', 20)),
         options=[
-            ('grpc.max_send_message_length', config.get('max_message_length', 10 * 1024 * 1024)),
-            ('grpc.max_receive_message_length', config.get('max_message_length', 10 * 1024 * 1024)),
+            ('grpc.max_send_message_length', server_config.get('max_message_length', 10 * 1024 * 1024)),
+            ('grpc.max_receive_message_length', server_config.get('max_message_length', 10 * 1024 * 1024)),
             ('grpc.keepalive_time_ms', 10000),
             ('grpc.keepalive_timeout_ms', 5000),
             ('grpc.keepalive_permit_without_calls', True),
@@ -555,16 +559,16 @@ def serve(config: dict):
             ('grpc.http2.min_time_between_pings_ms', 10000),
             ('grpc.http2.max_ping_strikes', 0),
         ],
-        maximum_concurrent_rpcs=config.get('max_concurrent_rpcs', 100)
+        maximum_concurrent_rpcs=server_config.get('max_concurrent_rpcs', 100)
     )
     
-    # Add service
+    # Add service (pass server_config for cache/circuit breaker settings)
     rt_predictor_pb2_grpc.add_JobRuntimePredictorServicer_to_server(
-        RTPredictorServicer(predictor_service, config), server
+        RTPredictorServicer(predictor_service, server_config), server
     )
     
     # Add insecure port
-    port = config.get('port', 50051)
+    port = server_config.get('port', 50051)
     server.add_insecure_port(f'[::]:{port}')
     
     # Start server
@@ -593,7 +597,7 @@ def main():
     # Load configuration
     config = load_config()
     
-    # Get server config with enhanced defaults
+    # Set enhanced server defaults
     server_config = config.get('server', {})
     server_config.setdefault('max_workers', 20)
     server_config.setdefault('max_concurrent_rpcs', 100)
@@ -602,9 +606,10 @@ def main():
     server_config.setdefault('circuit_breaker_threshold', 5)
     server_config.setdefault('circuit_breaker_timeout', 60.0)
     server_config.setdefault('max_queue_size', 10000)
+    config['server'] = server_config  # Update config with defaults
     
-    # Start server
-    serve(server_config)
+    # Start server with full config
+    serve(config)
 
 
 if __name__ == '__main__':

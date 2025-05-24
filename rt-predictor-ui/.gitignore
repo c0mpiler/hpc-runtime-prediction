@@ -1,0 +1,25 @@
+# Generated protobuf files
+src/proto/*_pb2.py
+src/proto/*_pb2_grpc.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local

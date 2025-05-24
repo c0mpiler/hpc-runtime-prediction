@@ -18,6 +18,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY src/ ./src/
 COPY configs/ ./configs/
+COPY scripts/ ./scripts/
+
+# Make scripts executable
+RUN chmod +x scripts/*.sh
+
+# Generate proto files
+RUN python -m grpc_tools.protoc \
+    -I./src/proto \
+    --python_out=./src/proto \
+    --grpc_python_out=./src/proto \
+    ./src/proto/rt_predictor.proto && \
+    sed -i 's/import rt_predictor_pb2/from . import rt_predictor_pb2/g' src/proto/rt_predictor_pb2_grpc.py
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/.streamlit

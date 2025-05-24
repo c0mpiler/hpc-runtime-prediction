@@ -37,7 +37,9 @@ class PredictorService:
         
     def _load_model(self):
         """Load trained model and artifacts."""
-        model_path = Path(self.config.get('model_path', 'models/production'))
+        # Get model path from config - handle both flat and nested structures
+        model_config = self.config.get('model', {})
+        model_path = Path(model_config.get('path', self.config.get('model_path', 'models/production')))
         
         if not model_path.exists():
             raise ValueError(f"Model path {model_path} does not exist")
@@ -76,7 +78,7 @@ class PredictorService:
             
             # Load component models
             models = {}
-            for model_name in ensemble_config['model_names']:
+            for model_name in ensemble_config['models']:
                 model_file = model_path / f"{model_name}_model.pkl"
                 if model_file.exists():
                     models[model_name] = joblib.load(model_file)
