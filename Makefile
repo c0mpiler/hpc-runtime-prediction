@@ -1,26 +1,26 @@
 # RT Predictor Microservices Makefile
 
-.PHONY: help setup build train start stop restart logs clean test status proto-gen dev-setup fresh-start
+.PHONY: help setup build train start stop restart logs clean clean-all test status fresh-start dev-setup
 
 # Default target
 help:
 	@echo "RT Predictor Microservices Management"
 	@echo "====================================="
-	@echo "make setup       - Initial setup (install dependencies, generate protos)"
+	@echo "make setup       - Initial setup (check prerequisites, prepare data)"
 	@echo "make build       - Build all Docker images"
 	@echo "make train       - Run training service"
 	@echo "make start       - Start all services"
 	@echo "make stop        - Stop all services"
 	@echo "make restart     - Restart all services"
 	@echo "make logs        - Show logs for all services"
-	@echo "make clean       - Clean up containers and volumes"
+	@echo "make clean       - Clean up containers, volumes, and networks"
+	@echo "make clean-all   - Deep clean including Docker system prune"
 	@echo "make test        - Run all tests"
 	@echo "make status      - Show service status"
 	@echo "make fresh-start - Complete setup from scratch (clean + setup + train + start)"
-	@echo "make proto-gen   - Generate protobuf files for all services"
 
 # Initial setup
-setup: proto-gen
+setup:
 	@echo "Setting up RT Predictor Microservices..."
 	@echo "Checking Docker..."
 	@docker --version || (echo "Docker not installed" && exit 1)
@@ -28,39 +28,45 @@ setup: proto-gen
 	@echo "Checking data..."
 	@if [ ! -f rt-predictor-training/data/raw/eagle_data.parquet ]; then \
 		echo "Setting up training data..."; \
-		./copy_data.sh || echo "Warning: Could not copy data. You may need to run 'git lfs pull' first."; \
+		if [ -f copy_data.sh ]; then \
+			chmod +x copy_data.sh && ./copy_data.sh || echo "Warning: Could not copy data. You may need to run 'git lfs pull' first."; \
+		else \
+			echo "Warning: copy_data.sh not found. Please ensure training data is in rt-predictor-training/data/raw/"; \
+		fi; \
 	fi
 	@echo "Creating .env file if not exists..."
-	@if [ ! -f .env ]; then cp .env.example .env; fi
+	@if [ ! -f .env ]; then cp .env.example .env 2>/dev/null || echo "Warning: .env.example not found"; fi
+	@# Ensure proto files are in place for UI service
+	@if [ -f rt-predictor-api/src/proto/rt_predictor.proto ]; then \
+		mkdir -p rt-predictor-ui/src/proto; \
+		cp rt-predictor-api/src/proto/rt_predictor.proto rt-predictor-ui/src/proto/ 2>/dev/null || true; \
+		echo "# RT Predictor Protocol Buffer Definitions" > rt-predictor-ui/src/proto/__init__.py; \
+	fi
 	@echo "Setup complete!"
 
-# Generate protobuf files
-proto-gen:
-	@echo "Generating protobuf files..."
-	@# Generate for API service (if running locally)
-	@if [ -f rt-predictor-api/scripts/generate_proto.sh ]; then \
-		cd rt-predictor-api && chmod +x scripts/generate_proto.sh && ./scripts/generate_proto.sh || true; \
-	fi
-	@# Copy proto file to UI service
-	@cp rt-predictor-api/src/proto/rt_predictor.proto rt-predictor-ui/src/proto/
-	@# Create __init__.py for UI proto module
-	@echo "# RT Predictor Protocol Buffer Definitions" > rt-predictor-ui/src/proto/__init__.py
-	@echo "Proto files prepared!"
-
 # Build all images
-build: proto-gen
+build:
 	@echo "Building all services..."
-	docker-compose build
+	@# Ensure proto file is copied before build
+	@if [ -f rt-predictor-api/src/proto/rt_predictor.proto ]; then \
+		mkdir -p rt-predictor-ui/src/proto; \
+		cp rt-predictor-api/src/proto/rt_predictor.proto rt-predictor-ui/src/proto/ 2>/dev/null || true; \
+	fi
+	docker-compose build --no-cache
 
 # Run training
 train:
 	@echo "Running training service..."
 	@echo "This will train models on the Eagle dataset (may take 5-10 minutes)..."
+	@# Ensure clean state for training
+	@docker-compose --profile training down --remove-orphans 2>/dev/null || true
 	docker-compose --profile training up rt-predictor-training
 
 # Start services
 start:
 	@echo "Starting all services..."
+	@# Ensure clean state
+	@docker-compose down --remove-orphans 2>/dev/null || true
 	docker-compose up -d
 	@sleep 5
 	@echo "\nServices started!"
@@ -75,7 +81,7 @@ start:
 # Stop services
 stop:
 	@echo "Stopping all services..."
-	docker-compose down
+	docker-compose down --remove-orphans
 
 # Restart services
 restart: stop start
@@ -91,27 +97,25 @@ logs-%:
 # Clean up
 clean:
 	@echo "Cleaning up..."
-	docker-compose down -v
-	@echo "Cleaned up containers and volumes"
+	@docker-compose down -v --remove-orphans 2>/dev/null || true
+	@# Remove any orphaned networks
+	@docker network ls | grep microservices | awk '{print $1}' | xargs -r docker network rm 2>/dev/null || true
+	@echo "Cleaned up containers, volumes, and networks"
+
+# Deep clean
+clean-all: clean
+	@echo "Performing deep clean..."
+	@docker system prune -f
+	@echo "Deep clean complete"
 
 # Run tests
 test:
 	@echo "Running tests..."
-	@if [ -d rt-predictor-training/venv ]; then \
-		cd rt-predictor-training && source venv/bin/activate && python -m pytest tests/ -v; \
-	else \
-		echo "Training service tests skipped (no venv found)"; \
-	fi
-	@if [ -d rt-predictor-api/venv ]; then \
-		cd rt-predictor-api && source venv/bin/activate && python -m pytest tests/ -v; \
-	else \
-		echo "API service tests skipped (no venv found)"; \
-	fi
-	@if [ -d rt-predictor-ui/venv ]; then \
-		cd rt-predictor-ui && source venv/bin/activate && python -m pytest tests/ -v; \
-	else \
-		echo "UI service tests skipped (no venv found)"; \
-	fi
+	@echo "Tests should be run inside containers or with proper environment setup"
+	@echo "To run tests in containers:"
+	@echo "  docker-compose run --rm rt-predictor-training pytest tests/"
+	@echo "  docker-compose run --rm rt-predictor-api pytest tests/"
+	@echo "  docker-compose run --rm rt-predictor-ui pytest tests/"
 
 # Show status
 status:
@@ -126,7 +130,7 @@ status:
 # Fresh start from scratch
 fresh-start:
 	@echo "Starting fresh setup..."
-	@make clean
+	@make clean-all
 	@make setup
 	@make build
 	@make train

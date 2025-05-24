@@ -4,9 +4,9 @@
 
 set -e  # Exit on error
 
-echo "=============================================="
+echo "============================================="
 echo "RT Predictor Microservices - Quick Start"
-echo "=============================================="
+echo "============================================="
 echo ""
 
 # Check if DEV environment variable is set
@@ -23,6 +23,14 @@ command -v docker-compose >/dev/null 2>&1 || { echo "❌ Docker Compose is requi
 command -v git >/dev/null 2>&1 || { echo "❌ Git is required but not installed. Aborting." >&2; exit 1; }
 
 echo "✅ All prerequisites installed"
+echo ""
+
+# Clean up any existing Docker resources
+echo "Cleaning up any existing resources..."
+docker-compose down -v --remove-orphans 2>/dev/null || true
+# Remove orphaned networks
+docker network ls | grep microservices | awk '{print $1}' | xargs -r docker network rm 2>/dev/null || true
+echo "✅ Cleanup complete"
 echo ""
 
 # Check if Git LFS is installed and pull data
@@ -48,25 +56,38 @@ read -p "Continue? (y/N) " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Use make commands for consistency
+    echo "Running fresh start..."
     make fresh-start
     
-    echo ""
-    echo "=============================================="
-    echo "✅ Setup Complete!"
-    echo "=============================================="
-    echo ""
-    echo "Access points:"
-    echo "- UI: http://localhost:8501"
-    echo "- API Metrics: http://localhost:8181/metrics"
-    echo "- Prometheus: http://localhost:9090"
-    echo "- Grafana: http://localhost:3000 (admin/admin)"
-    echo ""
-    echo "Useful commands:"
-    echo "- View logs: make logs"
-    echo "- Stop services: make stop"
-    echo "- Restart services: make restart"
-    echo "- Check status: make status"
-    echo ""
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "============================================="
+        echo "✅ Setup Complete!"
+        echo "============================================="
+        echo ""
+        echo "Access points:"
+        echo "- UI: http://localhost:8501"
+        echo "- API Metrics: http://localhost:8181/metrics"
+        echo "- Prometheus: http://localhost:9090"
+        echo "- Grafana: http://localhost:3000 (admin/admin)"
+        echo ""
+        echo "Useful commands:"
+        echo "- View logs: make logs"
+        echo "- Stop services: make stop"
+        echo "- Restart services: make restart"
+        echo "- Check status: make status"
+        echo ""
+    else
+        echo ""
+        echo "❌ Setup failed. Please check the errors above."
+        echo "Common issues:"
+        echo "1. Docker daemon not running"
+        echo "2. Port conflicts (8501, 50051, 8181, 9090, 3000)"
+        echo "3. Insufficient disk space"
+        echo ""
+        echo "To retry: ./quickstart.sh"
+    fi
 else
     echo "Setup cancelled."
 fi
