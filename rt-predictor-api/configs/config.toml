@@ -7,7 +7,7 @@ max_message_length = 10485760  # 10MB
 metrics_port = 8181
 
 [model]
-path = "models/production"
+path = "/app/models"
 
 [features]
 # Feature engineering configuration (must match training)

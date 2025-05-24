@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Training Service - Run manually or on schedule
   rt-predictor-training:
@@ -16,7 +14,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     profiles:
-      - training  # Only run when explicitly requested
+      - training # Only run when explicitly requested
 
   # API Service
   rt-predictor-api:
@@ -25,8 +23,8 @@ services:
       dockerfile: Dockerfile
     container_name: rt-predictor-api
     ports:
-      - "50051:50051"  # gRPC port
-      - "8181:8181"    # Metrics port
+      - "50051:50051" # gRPC port
+      - "8181:8181" # Metrics port
     volumes:
       - ./rt-predictor-api/configs:/app/configs:ro
       - shared-models:/app/models:ro
@@ -35,8 +33,7 @@ services:
       - rt-predictor-network
     environment:
       - PYTHONUNBUFFERED=1
-      - MODEL_PATH=/app/models/best_model.pkl
-      - FEATURE_ENGINEER_PATH=/app/models/feature_engineer.pkl
+      - MODEL_PATH=/app/models
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=:50051"]
@@ -51,7 +48,7 @@ services:
       dockerfile: Dockerfile
     container_name: rt-predictor-ui
     ports:
-      - "8501:8501"  # Streamlit port
+      - "8501:8501" # Streamlit port
     volumes:
       - ./rt-predictor-ui/configs:/app/configs:ro
       - ./rt-predictor-ui/logs:/app/logs
@@ -82,8 +79,8 @@ services:
     networks:
       - rt-predictor-network
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
     restart: unless-stopped
 
   # Grafana for visualization
@@ -111,5 +108,7 @@ networks:
 
 volumes:
   shared-models:
+    external: true
+    name: microservices_shared-models
   prometheus-data:
   grafana-data:
