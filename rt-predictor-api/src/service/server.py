@@ -37,13 +37,7 @@ MODEL_LOAD_TIME = Histogram('rt_predictor_model_load_seconds', 'Model loading ti
 PREDICTION_LATENCY = Histogram('rt_predictor_prediction_duration_seconds', 'Prediction computation time')
 
 
-class RTPredictor
-
-
-(rt_predictor_pb2_grpc.RTPredictor
-
-
-):
+class RTPredictorServicer(rt_predictor_pb2_grpc.JobRuntimePredictorServicer):
     """gRPC service implementation for RT Predictor."""
     
     def __init__(self, predictor_service: PredictorService):
@@ -60,21 +54,24 @@ class RTPredictor
         try:
             ACTIVE_CONNECTIONS.inc()
             self.logger.info("predict_request_received", 
-                           processors=request.processors_req,
-                           nodes=request.nodes_req,
-                           partition=request.partition)
+                           processors=request.features.processors_req,
+                           nodes=request.features.nodes_req,
+                           partition=request.features.partition)
             
             # Make prediction
             with PREDICTION_LATENCY.time():
-                prediction = self.predictor.predict_single(request)
+                prediction = self.predictor.predict_single(request.features)
             
             # Create response
             response = rt_predictor_pb2.PredictResponse(
-                predicted_runtime=prediction['predicted_runtime'],
+                predicted_runtime_seconds=prediction['predicted_runtime'],
                 confidence_lower=prediction['confidence_lower'],
                 confidence_upper=prediction['confidence_upper'],
                 model_version=prediction['model_version'],
-                features_used=prediction['features_used']
+                prediction_timestamp=int(time.time()),
+                runtime_category=prediction.get('runtime_category', 'medium'),
+                prediction_confidence=prediction.get('confidence_score', 0.8),
+                model_metadata={'features_used': str(prediction.get('features_used', {}))}
             )
             
             # Record metrics
@@ -96,8 +93,8 @@ class RTPredictor
         finally:
             ACTIVE_CONNECTIONS.dec()
     
-    def BatchPredict(self, request: rt_predictor_pb2.BatchPredictRequest,
-                     context: grpc.ServicerContext) -> rt_predictor_pb2.BatchPredictResponse:
+    def PredictBatch(self, request: rt_predictor_pb2.PredictBatchRequest,
+                     context: grpc.ServicerContext) -> rt_predictor_pb2.PredictBatchResponse:
         """Handle batch prediction requests."""
         start_time = time.time()
         method = 'BatchPredict'
@@ -105,31 +102,34 @@ class RTPredictor
         try:
             ACTIVE_CONNECTIONS.inc()
             self.logger.info("batch_predict_request_received", 
-                           batch_size=len(request.requests))
+                           batch_size=len(request.jobs))
             
             # Make batch predictions
             with PREDICTION_LATENCY.time():
-                predictions = self.predictor.predict_batch(request.requests)
+                predictions = self.predictor.predict_batch([req.features for req in request.jobs])
             
             # Create response
             responses = []
             for pred in predictions:
                 responses.append(rt_predictor_pb2.PredictResponse(
-                    predicted_runtime=pred['predicted_runtime'],
+                    predicted_runtime_seconds=pred['predicted_runtime'],
                     confidence_lower=pred['confidence_lower'],
                     confidence_upper=pred['confidence_upper'],
                     model_version=pred['model_version'],
-                    features_used=pred['features_used']
+                    prediction_timestamp=int(time.time()),
+                    runtime_category=pred.get('runtime_category', 'medium'),
+                    prediction_confidence=pred.get('confidence_score', 0.8),
+                    model_metadata={'features_used': str(pred.get('features_used', {}))}
                 ))
             
-            response = rt_predictor_pb2.BatchPredictResponse(responses=responses)
+            response = rt_predictor_pb2.PredictBatchResponse(predictions=responses)
             
             # Record metrics
             REQUEST_COUNT.labels(method=method, status='success').inc()
             REQUEST_LATENCY.labels(method=method).observe(time.time() - start_time)
             
             self.logger.info("batch_predict_request_completed", 
-                           batch_size=len(request.requests),
+                           batch_size=len(request.jobs),
                            duration=time.time() - start_time)
             
             return response
@@ -143,7 +143,7 @@ class RTPredictor
         finally:
             ACTIVE_CONNECTIONS.dec()
     
-    def StreamPredict(self, request_iterator: Iterator[rt_predictor_pb2.PredictRequest],
+    def PredictStream(self, request_iterator: Iterator[rt_predictor_pb2.PredictRequest],
                       context: grpc.ServicerContext) -> Iterator[rt_predictor_pb2.PredictResponse]:
         """Handle streaming prediction requests."""
         method = 'StreamPredict'
@@ -160,15 +160,18 @@ class RTPredictor
                 try:
                     # Make prediction
                     with PREDICTION_LATENCY.time():
-                        prediction = self.predictor.predict_single(request)
+                        prediction = self.predictor.predict_single(request.features)
                     
                     # Create response
                     response = rt_predictor_pb2.PredictResponse(
-                        predicted_runtime=prediction['predicted_runtime'],
+                        predicted_runtime_seconds=prediction['predicted_runtime'],
                         confidence_lower=prediction['confidence_lower'],
                         confidence_upper=prediction['confidence_upper'],
                         model_version=prediction['model_version'],
-                        features_used=prediction['features_used']
+                        prediction_timestamp=int(time.time()),
+                        runtime_category=prediction.get('runtime_category', 'medium'),
+                        prediction_confidence=prediction.get('confidence_score', 0.8),
+                        model_metadata={'features_used': str(prediction.get('features_used', {}))}
                     )
                     
                     REQUEST_LATENCY.labels(method=method).observe(time.time() - start_time)
@@ -193,22 +196,25 @@ class RTPredictor
         finally:
             ACTIVE_CONNECTIONS.dec()
     
-    def GetModelInfo(self, request: rt_predictor_pb2.ModelInfoRequest,
-                     context: grpc.ServicerContext) -> rt_predictor_pb2.ModelInfoResponse:
+    def GetModelInfo(self, request: rt_predictor_pb2.GetModelInfoRequest,
+                     context: grpc.ServicerContext) -> rt_predictor_pb2.GetModelInfoResponse:
         """Get information about the loaded model."""
         try:
             info = self.predictor.get_model_info()
             
-            return rt_predictor_pb2.ModelInfoResponse(
+            return rt_predictor_pb2.GetModelInfoResponse(
                 model_version=info['version'],
                 model_type=info['type'],
                 training_date=info['training_date'],
-                feature_count=info['feature_count'],
-                metrics={
-                    'mae': info['metrics'].get('test_mae', 0),
-                    'rmse': info['metrics'].get('test_rmse', 0),
-                    'r2': info['metrics'].get('test_r2', 0)
-                }
+                num_features=info['feature_count'],
+                validation_mae=info['metrics'].get('test_mae', 0),
+                validation_mape=info['metrics'].get('test_mape', 0),
+                test_mae=info['metrics'].get('test_mae', 0),
+                test_mape=info['metrics'].get('test_mape', 0),
+                is_loaded=True,
+                predictions_served=int(REQUEST_COUNT.labels(method='Predict', status='success')._value.get()),
+                average_latency_ms=0.0,  # This would need proper tracking
+                uptime_seconds=int(time.time() - self.predictor.start_time)
             )
         except Exception as e:
             self.logger.error("get_model_info_failed", error=str(e))
@@ -224,7 +230,8 @@ class RTPredictor
             
             return rt_predictor_pb2.HealthCheckResponse(
                 status='healthy' if is_healthy else 'unhealthy',
-                timestamp=int(time.time())
+                timestamp=int(time.time()),
+                message='Service is operational' if is_healthy else 'Service is not operational'
             )
         except Exception as e:
             return rt_predictor_pb2.HealthCheckResponse(
@@ -260,14 +267,8 @@ def serve(config: dict):
     )
     
     # Add service
-    rt_predictor_pb2_grpc.add_RTPredictor
-
-
-ToServer(
-        RTPredictor
-
-
-(predictor_service), server
+    rt_predictor_pb2_grpc.add_JobRuntimePredictorServicer_to_server(
+        RTPredictorServicer(predictor_service), server
     )
     
     # Add insecure port
