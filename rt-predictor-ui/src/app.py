@@ -17,9 +17,6 @@ import os
 from typing import Optional, Dict, List, Tuple
 import sys
 
-# Add utils to path
-sys.path.append(str(Path(__file__).parent))
-
 # Page configuration
 st.set_page_config(
     page_title="RT Predictor - HPC Job Runtime Prediction",

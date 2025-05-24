@@ -16,9 +16,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Import utilities
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
 from utils.grpc_client import format_runtime
 
 def create_gauge_chart(value: float, title: str, max_value: float = 100, 

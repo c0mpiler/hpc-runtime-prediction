@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
+# Set PYTHONPATH to include src directory
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
 # Copy requirements
 COPY requirements.txt .
 
