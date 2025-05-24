@@ -1,7 +1,0 @@
-# Configuration for Streamlit multipage app
-
-# This file can be used to configure page ordering and metadata
-# when using Streamlit's native multipage structure
-
-# For now, we're using custom routing via radio buttons
-# which works well for our use case and provides more control

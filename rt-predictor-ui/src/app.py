@@ -159,9 +159,9 @@ if not st.session_state.api_connected:
 
 if st.session_state.api_connected and st.session_state.client:
     # Import pages
-    from pages.single_prediction import show_single_prediction
-    from pages.batch_prediction import show_batch_prediction
-    from pages.analytics import show_analytics
+    from views.single_prediction import show_single_prediction
+    from views.batch_prediction import show_batch_prediction
+    from views.analytics import show_analytics
     
     # Route to selected page
     if page == "🎯 Single Prediction":
