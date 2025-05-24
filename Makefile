@@ -18,6 +18,12 @@ help:
 	@echo "make test        - Run all tests"
 	@echo "make status      - Show service status"
 	@echo "make fresh-start - Complete setup from scratch (clean + setup + train + start)"
+	@echo ""
+	@echo "M2 Max Optimization Commands (Apple Silicon):"
+	@echo "============================================="
+	@echo "make train-m2max       - Run optimized training (2-3x faster)"
+	@echo "make start-m2max       - Start services with resource limits"
+	@echo "make fresh-start-m2max - Complete setup with M2 Max optimization"
 
 # Initial setup
 setup:
@@ -136,6 +142,41 @@ fresh-start:
 	@make train
 	@make start
 	@echo "\nFresh setup complete! All services are running."
+
+# M2 Max optimized training
+train-m2max:
+	@echo "Running M2 Max optimized training..."
+	@echo "Using 10 CPU cores and up to 48GB RAM..."
+	@# Copy optimized config
+	@cp rt-predictor-training/configs/config.m2max.toml rt-predictor-training/configs/config.toml
+	@# Ensure clean state for training
+	@docker-compose --profile training down --remove-orphans 2>/dev/null || true
+	docker-compose -f docker-compose.m2max.yml --profile training up rt-predictor-training
+
+# M2 Max optimized start
+start-m2max:
+	@echo "Starting services with M2 Max optimization..."
+	@docker-compose down --remove-orphans 2>/dev/null || true
+	docker-compose -f docker-compose.m2max.yml up -d
+	@sleep 5
+	@echo "\nServices started with M2 Max optimization!"
+	@echo "=================="
+	@echo "UI: http://localhost:8501"
+	@echo "API Metrics: http://localhost:8181/metrics"
+	@echo "Prometheus: http://localhost:9090"
+	@echo "Grafana: http://localhost:3000 (admin/admin)"
+	@echo "=================="
+	@make status
+
+# Fresh start with M2 Max optimization
+fresh-start-m2max:
+	@echo "Starting fresh setup with M2 Max optimization..."
+	@make clean-all
+	@make setup
+	@make build
+	@make train-m2max
+	@make start-m2max
+	@echo "\nFresh setup complete with M2 Max optimization!"
 
 # Development setup (for local development)
 dev-setup:
